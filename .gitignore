@@ -1,0 +1,14 @@
+.idea/
+.DS_Store
+
+bin/
+testbin/
+coverage/
+*.test
+
+.env*
+!.env.*.example
+
+.alt/
+.data/
+.volumes/
