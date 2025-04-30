@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package calculator.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "edu-final-calculate-api/pkg/calculator/v1;v1";
+
+// Internal service for agent communication.
+service AgentService {
+  // Get task for execution (for agents).
+  rpc GetTask(google.protobuf.Empty) returns (GetTaskResponse) {
+    option (google.api.http) = {get: "/internal/task"};
+  }
+
+  // Submit task processing result (from agents).
+  rpc SubmitTaskResult(SubmitTaskResultRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/internal/task"
+      body: "*"
+    };
+  }
+}
+
+// Defines the mathematical operation to be performed on operands.
+enum TaskOperation {
+  // Operation not specified.
+  TASK_OPERATION_UNSPECIFIED = 0;
+  // Addition operation (+).
+  TASK_OPERATION_ADDITION = 1;
+  // Subtraction operation (-).
+  TASK_OPERATION_SUBTRACTION = 2;
+  // Multiplication operation (*).
+  TASK_OPERATION_MULTIPLICATION = 3;
+  // Division operation (/).
+  TASK_OPERATION_DIVISION = 4;
+}
+
+// A single computational task to be processed by an agent.
+message Task {
+  // Unique identifier of the task.
+  string id = 1;
+  // First operand value.
+  double arg1 = 2;
+  // Second operand value.
+  double arg2 = 3;
+  // Mathematical operation to perform.
+  TaskOperation operation = 4;
+  // Expected duration for task processing.
+  google.protobuf.Duration operation_time = 5;
+}
+
+// Contains a task assigned to an agent for processing.
+message GetTaskResponse {
+  // Task to be processed.
+  Task task = 1;
+}
+
+// Specifies the task result being submitted.
+message SubmitTaskResultRequest {
+  // Identifier of the completed task.
+  string id = 1;
+  // Computation result.
+  double result = 2;
+}

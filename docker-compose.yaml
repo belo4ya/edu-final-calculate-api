@@ -1,0 +1,38 @@
+services:
+  calculator:
+    build:
+      context: .
+    command: ["/calculator"]
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "50051:50051"
+    environment:
+      - LOG_LEVEL=info
+      - MGMT_ADDR=:8081
+      - GRPC_ADDR=:50051
+      - HTTP_ADDR=:8080
+      - DB_BADGER_PATH=/tmp/badger
+      - TIME_ADDITION_MS=1000
+      - TIME_SUBTRACTION_MS=1000
+      - TIME_MULTIPLICATIONS_MS=1000
+      - TIME_DIVISIONS_MS=1000
+    restart: unless-stopped
+    volumes:
+      - .volumes/badger:/tmp/badger
+
+  agent:
+    build:
+      context: .
+    command: ["/agent"]
+    environment:
+      - LOG_LEVEL=info
+      - MGMT_ADDR=:8082
+      - CALCULATOR_API_ADDR=calculator:50051
+      - COMPUTING_POWER=4
+    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 2
+    depends_on:
+      - calculator

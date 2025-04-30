@@ -1,0 +1,13 @@
+quiet: True
+with-expecter: True
+outpkg: mocks
+dir: "internal/testutil/mocks/{{.PackageName}}"
+packages:
+  edu-final-calculate-api/internal/agent:
+    config:
+      all: True
+      dir: "internal/testutil/mocks/{{.PackageName}}"
+  edu-final-calculate-api/internal/calculator/service:
+    config:
+      all: True
+      dir: "internal/testutil/mocks/calculator/{{.PackageName}}"

@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package calculator.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "edu-final-calculate-api/pkg/calculator/v1;v1";
+
+service UserService {
+  rpc Register(RegisterRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/register"
+      body: "*"
+    };
+  }
+
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/login"
+      body: "*"
+    };
+  }
+}
+
+message RegisterRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+}

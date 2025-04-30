@@ -3,7 +3,7 @@
 
 bin/
 testbin/
-coverage/
+.coverage/
 *.test
 
 .env*

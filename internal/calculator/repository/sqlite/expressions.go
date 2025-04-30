@@ -1,0 +1,98 @@
+package sqlite
+
+import (
+	"context"
+	"database/sql"
+	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"errors"
+	"fmt"
+)
+
+// CreateExpression stores a new expression with its associated tasks
+// and returns the ID of the created expression.
+func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd models.CreateExpressionCmd) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// ListExpressions retrieves all stored expressions for a specific user.
+func (r *Repository) ListExpressions(ctx context.Context, userID string) ([]models.Expression, error) {
+	const q = `
+        SELECT id, user_id, expression, status, result, error, created_at, updated_at 
+        FROM expressions 
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+    `
+
+	var exprs []models.Expression
+	if err := r.db.SelectContext(ctx, &exprs, q, userID); err != nil {
+		return nil, fmt.Errorf("db select: %w", err)
+	}
+
+	return exprs, nil
+}
+
+// GetExpression retrieves a specific expression by its ID for a specific user.
+// Returns models.ErrExpressionNotFound if the expression doesn't exist.
+func (r *Repository) GetExpression(ctx context.Context, userID string, exprID string) (*models.Expression, error) {
+	const q = `
+        SELECT id, user_id, expression, status, result, error, created_at, updated_at 
+        FROM expressions 
+        WHERE id = ? AND user_id = ?
+    `
+
+	var expr models.Expression
+	if err := r.db.GetContext(ctx, &expr, q, exprID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrExpressionNotFound
+		}
+		return nil, fmt.Errorf("db get: %w", err)
+	}
+
+	return &expr, nil
+}
+
+// ListExpressionTasks retrieves all tasks associated with a specific expression for a specific user.
+// Returns models.ErrExpressionNotFound if the expression doesn't exist.
+func (r *Repository) ListExpressionTasks(ctx context.Context, userID string, exprID string) ([]models.Task, error) {
+	q := `SELECT COUNT(*) FROM expressions WHERE id = ? AND user_id = ?`
+
+	var count int
+	if err := r.db.GetContext(ctx, &count, q, exprID, userID); err != nil {
+		return nil, fmt.Errorf("db get: %w", err)
+	}
+	if count == 0 {
+		return nil, models.ErrExpressionNotFound
+	}
+
+	q = `
+        SELECT id, expression_id, parent_task_1_id, parent_task_2_id, 
+               arg1, arg2, operation, operation_time, status, result, expire_at,
+               created_at, updated_at
+        FROM tasks 
+        WHERE expression_id = ?
+        ORDER BY created_at
+    `
+
+	var tasks []models.Task
+	if err := r.db.SelectContext(ctx, &tasks, q, exprID); err != nil {
+		return nil, fmt.Errorf("db select: %w", err)
+	}
+
+	return tasks, nil
+}
+
+// GetPendingTask retrieves and claims the first available pending task.
+// Returns models.ErrNoPendingTasks if there are no pending tasks available.
+func (r *Repository) GetPendingTask(ctx context.Context) (models.Task, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+// FinishTask updates a task's status and result, and handles subsequent operations
+// like updating related tasks, enqueueing child tasks, or completing expressions.
+// Returns models.ErrTaskNotFound if the task doesn't exist.
+func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) error {
+	//TODO implement me
+	panic("implement me")
+}
