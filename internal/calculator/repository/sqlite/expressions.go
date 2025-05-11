@@ -6,13 +6,54 @@ import (
 	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/rs/xid"
 )
 
 // CreateExpression stores a new expression with its associated tasks
 // and returns the ID of the created expression.
 func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd models.CreateExpressionCmd) (string, error) {
-	//TODO implement me
-	panic("implement me")
+	exprID := xid.New().String()
+	timeNow := time.Now().UTC()
+
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return "", fmt.Errorf("begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	// Insert the new expression
+	const insertExpressionQuery = `
+        INSERT INTO expressions (
+            id, user_id, expression, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?)
+    `
+
+	_, err = tx.ExecContext(
+		ctx,
+		insertExpressionQuery,
+		exprID,
+		userID,
+		cmd.Expression,
+		models.ExpressionStatusPending,
+		timeNow,
+		timeNow,
+	)
+	if err != nil {
+		return "", fmt.Errorf("insert expression: %w", err)
+	}
+
+	// Commit the transaction
+	if err = tx.Commit(); err != nil {
+		return "", fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return exprID, nil
 }
 
 // ListExpressions retrieves all stored expressions for a specific user.
