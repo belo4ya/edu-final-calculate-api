@@ -10,7 +10,7 @@ import (
 
 	"edu-final-calculate-api/internal/calculator/calc"
 	"edu-final-calculate-api/internal/calculator/config"
-	repository "edu-final-calculate-api/internal/calculator/repository/sqlite"
+	"edu-final-calculate-api/internal/calculator/repository"
 	"edu-final-calculate-api/internal/calculator/server"
 	"edu-final-calculate-api/internal/calculator/service"
 	"edu-final-calculate-api/internal/logging"

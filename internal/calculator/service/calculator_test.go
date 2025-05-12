@@ -2,14 +2,14 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"edu-final-calculate-api/internal/calculator/auth"
+	"edu-final-calculate-api/internal/calculator/database/sqlz"
 	"fmt"
 	"testing"
 
 	calctypes "edu-final-calculate-api/internal/calculator/calc/types"
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
 	"edu-final-calculate-api/internal/testutil"
 	mocks "edu-final-calculate-api/internal/testutil/mocks/calculator/service"
 
@@ -162,7 +162,7 @@ func TestCalculatorService_ListExpressions(t *testing.T) {
 						ID:         "expr1",
 						Expression: "1+2",
 						Status:     models.ExpressionStatusCompleted,
-						Result:     sql.Null[float64]{V: 3, Valid: true},
+						Result:     sqlz.Some[float64](3),
 					},
 					{
 						ID:         "expr2",
@@ -247,7 +247,7 @@ func TestCalculatorService_GetExpression(t *testing.T) {
 					ID:         "expr1",
 					Expression: "1+2*3",
 					Status:     models.ExpressionStatusCompleted,
-					Result:     sql.Null[float64]{V: 7, Valid: true},
+					Result:     sqlz.Some[float64](7),
 				}, nil)
 			},
 			args: args{

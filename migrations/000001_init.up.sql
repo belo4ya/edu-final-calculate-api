@@ -19,8 +19,8 @@ CREATE TABLE expressions
     result     REAL,
     error      TEXT,
 
-    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
@@ -35,16 +35,16 @@ CREATE TABLE tasks
     expression_id    TEXT      NOT NULL,
     parent_task_1_id TEXT,
     parent_task_2_id TEXT,
-    arg1             REAL      NOT NULL,
-    arg2             REAL      NOT NULL,
+    arg1             REAL,
+    arg2             REAL,
     operation        TEXT      NOT NULL,
     operation_time   INTEGER   NOT NULL, -- stored in milliseconds
     status           TEXT      NOT NULL,
     result           REAL,
     expire_at        TIMESTAMP,
 
-    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (expression_id) REFERENCES expressions (id) ON DELETE CASCADE,
     FOREIGN KEY (parent_task_1_id) REFERENCES tasks (id),

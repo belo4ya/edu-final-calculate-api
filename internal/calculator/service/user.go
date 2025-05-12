@@ -5,13 +5,15 @@ import (
 	"crypto/md5"
 	"edu-final-calculate-api/internal/calculator/auth"
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
+	"edu-final-calculate-api/internal/calculator/server"
 	"edu-final-calculate-api/internal/logging"
 	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -62,6 +64,7 @@ func (s *UserService) Register(ctx context.Context, req *calculatorv1.RegisterRe
 		PasswordHash: s.hashPassword(req.Password),
 	}); err != nil {
 		if errors.Is(err, models.ErrUserExists) {
+			server.WithHTTPResponseCode(ctx, http.StatusBadRequest)
 			return nil, status.Error(codes.AlreadyExists, "user exists")
 		}
 		return nil, InternalError(fmt.Errorf("register user: %w", err))
@@ -77,6 +80,7 @@ func (s *UserService) Login(ctx context.Context, req *calculatorv1.LoginRequest)
 	})
 	if err != nil {
 		if errors.Is(err, models.ErrUserNotFound) {
+			server.WithHTTPResponseCode(ctx, http.StatusBadRequest)
 			return nil, status.Error(codes.FailedPrecondition, "bad login or password")
 		}
 		return nil, InternalError(fmt.Errorf("get user: %w", err))

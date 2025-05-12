@@ -1,9 +1,9 @@
-package sqlite
+package repository
 
 import (
 	"context"
 	"database/sql"
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
 	"errors"
 	"fmt"
 	"time"
@@ -58,8 +58,8 @@ func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd mo
 			ExpressionID:  expr.ID,
 			ParentTask1ID: sql.Null[string]{V: t.ParentTask1ID, Valid: t.ParentTask1ID != ""},
 			ParentTask2ID: sql.Null[string]{V: t.ParentTask2ID, Valid: t.ParentTask2ID != ""},
-			Arg1:          t.Arg1,
-			Arg2:          t.Arg2,
+			Arg1:          sql.Null[float64]{V: t.Arg1, Valid: t.ParentTask1ID == ""},
+			Arg2:          sql.Null[float64]{V: t.Arg2, Valid: t.ParentTask2ID == ""},
 			Operation:     t.Operation,
 			OperationTime: t.OperationTime,
 			Status:        status,
@@ -311,28 +311,64 @@ func (r *Repository) isFinalTask(ctx context.Context, tx *sqlx.Tx, taskID string
 }
 
 func (r *Repository) enqueueChildTask(ctx context.Context, tx *sqlx.Tx, completedTask *models.Task) error {
-	// FIXME
-	const q = `
-            UPDATE tasks 
-            SET status = :status_pending, updated_at = :updated_at
-            WHERE 
-                (
-                    (parent_task_1_id = :task_id AND (parent_task_2_id IS NULL OR 
-                        parent_task_2_id IN (SELECT id FROM tasks WHERE status = :status_completed)))
-                    OR
-                    (parent_task_2_id = :task_id AND (parent_task_1_id IS NULL OR 
-                        parent_task_1_id IN (SELECT id FROM tasks WHERE status = :status_completed)))
-                )
-                AND status = :status_created
-        `
+	// Find child task that depends on the completed task
+	q := `
+			SELECT id,
+				   expression_id,
+				   parent_task_1_id,
+				   parent_task_2_id,
+				   arg1,
+				   arg2,
+				   operation,
+				   operation_time,
+				   status,
+				   result,
+				   expire_at,
+				   created_at,
+				   updated_at
+			FROM tasks
+			WHERE parent_task_1_id = :task_id
+			   OR parent_task_2_id = :task_id
+		`
 
-	if _, err := tx.NamedExecContext(ctx, q, map[string]any{
-		"status_pending":   models.TaskStatusPending,
-		"updated_at":       completedTask.UpdatedAt,
-		"task_id":          completedTask.ID,
-		"status_completed": models.TaskStatusCompleted,
-		"status_created":   models.TaskStatusCreated,
-	}); err != nil {
+	row, err := sqlx.NamedQueryContext(ctx, tx, q, map[string]any{"task_id": completedTask.ID})
+	if err != nil {
+		return fmt.Errorf("select child task: %w", err)
+	}
+	defer func(row *sqlx.Rows) {
+		_ = row.Close()
+	}(row)
+
+	if !row.Next() {
+		return errors.New("child task not found")
+	}
+
+	var childTask models.Task
+	if err := row.StructScan(&childTask); err != nil {
+		return fmt.Errorf("scan task: %w", err)
+	}
+
+	// Update child task with parent's result value
+	if childTask.ParentTask1ID.Valid && childTask.ParentTask1ID.V == completedTask.ID {
+		childTask.Arg1 = completedTask.Result
+	} else { // childTask.ParentTask2ID == completedTask.ID
+		childTask.Arg2 = completedTask.Result
+	}
+	if childTask.Arg1.Valid && childTask.Arg2.Valid {
+		childTask.Status = models.TaskStatusPending
+	}
+	childTask.UpdatedAt = completedTask.UpdatedAt
+
+	q = `
+			UPDATE tasks
+			SET arg1       = :arg1,
+				arg2       = :arg2,
+				status     = :status,
+				updated_at = :updated_at
+			WHERE id = :id
+		`
+
+	if _, err := tx.NamedExecContext(ctx, q, childTask); err != nil {
 		return fmt.Errorf("update task: %w", err)
 	}
 	return nil

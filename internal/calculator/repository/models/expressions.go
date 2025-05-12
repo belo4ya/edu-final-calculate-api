@@ -39,8 +39,8 @@ type Task struct {
 	ParentTask1ID sql.Null[string] `db:"parent_task_1_id"`
 	ParentTask2ID sql.Null[string] `db:"parent_task_2_id"`
 
-	Arg1          float64             `db:"arg_1"`
-	Arg2          float64             `db:"arg_2"`
+	Arg1          sql.Null[float64]   `db:"arg1"`
+	Arg2          sql.Null[float64]   `db:"arg2"`
 	Operation     TaskOperation       `db:"operation"`
 	OperationTime time.Duration       `db:"operation_time"`
 	Status        TaskStatus          `db:"status"`

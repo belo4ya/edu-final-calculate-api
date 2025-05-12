@@ -10,7 +10,6 @@
 
 > 🔜 Ведутся незначительные доработки. Для оценки зайди, пожалуйста, завтра 🔜
 
-
 Программирование на Go | 24. Распределенный вычислитель арифметических выражений.
 Пользователь отправляет арифметическое выражение по HTTP и получает в ответ ~~его результат~~ id задачи вычисления.
 
@@ -41,7 +40,7 @@ HTTP API реализован с помощью [grpc-gateway](https://github.co
 [calculator/config/config.go](internal/calculator/config/config.go)
 и [agent/config/config.go](internal/agent/config/config.go).
 
-Необходимые значения также можно задать с помощью файлов .env-файлов `.env.calculator` и `.env.agent`
+Необходимые значения также можно задать с помощью .env-файлов `.env.calculator` и `.env.agent`
 (см. примеры [.env.calculator.example](.env.calculator.example) и [.env.agent.example](.env.agent.example))
 
 ### Calculator
@@ -50,7 +49,9 @@ HTTP API реализован с помощью [grpc-gateway](https://github.co
 - `MGMT_ADDR`: Адрес сервера управления (по умолчанию: `:8081`)
 - `GRPC_ADDR`: Адрес GRPC сервера (по умолчанию: `:50051`)
 - `HTTP_ADDR`: Адрес HTTP сервера (по умолчанию: `:8080`)
-- `DB_BADGER_PATH`: Путь к хранилищу базы данных Badger (по умолчанию: `.data/badger`)
+- `DB_SQLITE_PATH`: Путь к хранилищу базы данных SQLite (по умолчанию: `.data/db.sqlite`)
+- `AUTH_JWT_SECRET`: TODO (по умолчанию: `jwt-secret`)
+- `AUTH_JWT_EXPIRATION_TIME`: TODO (по умолчанию: `1h`)
 - `TIME_ADDITION_MS`: Время в миллисекундах для операций сложения (по умолчанию: `1000`)
 - `TIME_SUBTRACTION_MS`: Время в миллисекундах для операций вычитания (по умолчанию: `1000`)
 - `TIME_MULTIPLICATION_MS`: Время в миллисекундах для операций умножения (по умолчанию: `1000`)
@@ -74,6 +75,7 @@ make up
 Для тех у кого болит Docker
 
 ```shell
+make migrate
 go run ./cmd/calculator &
 go run ./cmd/agent &
 # не забудь остановить процессы с помощью kill <pid>
@@ -103,9 +105,109 @@ make lint test-cov
 <img src="docs/assets/swagger-ui.png" alt="" width="800">
 </details>
 
+Для работы с [Expressions API](#expressions-api) (`/api/v1/calculate`, `/api/v1/expressions`)
+необходима авторизация с помощью Access Token со схемой Bearer.
+По умолчанию доступен пользователь `admin` с паролем `admin`
+(см. [Примеры curl](#примеры-curl) и [User API](#users-api)):
+
+```shell
+curl -X 'POST' 'http://localhost:8080/api/v1/login' \
+  -d '{
+  "login": "admin",
+  "password": "admin"
+}'
+
+#{
+#  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2luZm8iOnsiaWQiOiIwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImxvZ2luIjoiYWRtaW4ifSwic3ViIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJleHAiOjE3NDcwODM0NTEsImlhdCI6MTc0NzA3OTg1MX0.oAS86_fHMNqzqTXcCdQqbH_c5pFtVHg9HrcJ4hy9x_0"
+#}
+```
+
 ### Примеры curl
 
-#### Public API
+#### Users API
+
+TODO:
+
+```shell
+curl -X 'POST' 'http://localhost:8080/api/v1/register' \
+  -d '{
+  "login": "user",
+  "password": "user"
+}'
+```
+
+Ответ с кодом 200:
+
+```json
+{}
+```
+
+TODO:
+
+```shell
+curl -X 'POST' 'http://localhost:8080/api/v1/register' \
+  -d '{
+  "login": "user",
+  "password": "user"
+}'
+```
+
+Ответ с кодом 400:
+
+```json
+{
+  "code": 6,
+  "message": "user exists",
+  "details": []
+}
+```
+
+TODO:
+
+```shell
+curl -X 'POST' 'http://localhost:8080/api/v1/login' \
+  -d '{
+  "login": "user",
+  "password": "user"
+}'
+```
+
+Ответ с кодом 200:
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2luZm8iOnsiaWQiOiJkMGg1NGVsNmhqNmM3Mzk2YWt2MCIsImxvZ2luIjoidXNlciJ9LCJzdWIiOiJkMGg1NGVsNmhqNmM3Mzk2YWt2MCIsImV4cCI6MTc0NzA4MzM2NSwiaWF0IjoxNzQ3MDc5NzY1fQ.5PXntckgeOFuplRxSGBQxLAsbtkBtLQgE_qqestYVPA"
+}
+```
+
+TODO:
+
+```shell
+curl -X 'POST' 'http://localhost:8080/api/v1/login' \
+  -d '{
+  "login": "pippo",
+  "password": "pluto"
+}'
+```
+
+Ответ с кодом 400:
+
+```json
+{
+  "code": 9,
+  "message": "bad login or password",
+  "details": []
+}
+```
+
+#### Expressions API
+
+Получить Access Token:
+
+```shell
+#TODO
+ACCESS_TOKEN=
+```
 
 Отправка арифметического выражения на вычисление:
 
@@ -211,6 +313,51 @@ curl 'http://localhost:8080/api/v1/expressions'
 }
 ```
 
+Получение всех задач для конкретного выражения (полезно для отладки):
+
+```shell
+curl 'http://localhost:8080/api/v1/expressions/cv5rfcrj3vqdpq0e15b0/tasks'
+```
+
+Ответ с кодом 200:
+
+```json
+{
+  "tasks": [
+    {
+      "id": "cv5te3jj3vq46au1kjeg",
+      "expressionId": "cv5te3jj3vq46au1kjfg",
+      "parentTask1Id": "",
+      "parentTask2Id": "",
+      "arg1": 2,
+      "arg2": 2,
+      "operation": "TASK_OPERATION_MULTIPLICATION",
+      "operationTime": "1s",
+      "status": "TASK_STATUS_PENDING",
+      "result": 0,
+      "expireAt": "0001-01-01T00:00:00Z",
+      "createdAt": "2025-03-08T05:35:10.982839Z",
+      "updatedAt": "2025-03-08T05:35:10.982839Z"
+    },
+    {
+      "id": "cv5te3jj3vq46au1kjf0",
+      "expressionId": "cv5te3jj3vq46au1kjfg",
+      "parentTask1Id": "",
+      "parentTask2Id": "cv5te3jj3vq46au1kjeg",
+      "arg1": 2,
+      "arg2": 0,
+      "operation": "TASK_OPERATION_ADDITION",
+      "operationTime": "1s",
+      "status": "TASK_STATUS_PENDING",
+      "result": 0,
+      "expireAt": "0001-01-01T00:00:00Z",
+      "createdAt": "2025-03-08T05:35:10.982839Z",
+      "updatedAt": "2025-03-08T05:35:10.982839Z"
+    }
+  ]
+}
+```
+
 #### Agent API
 
 Запрос вычислительной задачи от Calculator:
@@ -282,53 +429,6 @@ curl -X 'POST' 'http://localhost:8080/internal/task' \
   "code": 5,
   "message": "task not found",
   "details": []
-}
-```
-
-#### Another internal API
-
-Получение всех задач для конкретного выражения (полезно для отладки):
-
-```shell
-curl 'http://localhost:8080/internal/v2/expressions/cv5rfcrj3vqdpq0e15b0/tasks'
-```
-
-Ответ с кодом 200:
-
-```json
-{
-  "tasks": [
-    {
-      "id": "cv5te3jj3vq46au1kjeg",
-      "expressionId": "cv5te3jj3vq46au1kjfg",
-      "parentTask1Id": "",
-      "parentTask2Id": "",
-      "arg1": 2,
-      "arg2": 2,
-      "operation": "TASK_OPERATION_MULTIPLICATION",
-      "operationTime": "1s",
-      "status": "TASK_STATUS_PENDING",
-      "result": 0,
-      "expireAt": "0001-01-01T00:00:00Z",
-      "createdAt": "2025-03-08T05:35:10.982839Z",
-      "updatedAt": "2025-03-08T05:35:10.982839Z"
-    },
-    {
-      "id": "cv5te3jj3vq46au1kjf0",
-      "expressionId": "cv5te3jj3vq46au1kjfg",
-      "parentTask1Id": "",
-      "parentTask2Id": "cv5te3jj3vq46au1kjeg",
-      "arg1": 2,
-      "arg2": 0,
-      "operation": "TASK_OPERATION_ADDITION",
-      "operationTime": "1s",
-      "status": "TASK_STATUS_PENDING",
-      "result": 0,
-      "expireAt": "0001-01-01T00:00:00Z",
-      "createdAt": "2025-03-08T05:35:10.982839Z",
-      "updatedAt": "2025-03-08T05:35:10.982839Z"
-    }
-  ]
 }
 ```
 

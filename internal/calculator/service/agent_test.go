@@ -2,14 +2,14 @@ package service
 
 import (
 	"context"
-	"database/sql"
+	"edu-final-calculate-api/internal/calculator/database/sqlz"
 	"fmt"
 	"math"
 	"testing"
 	"time"
 
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
 	"edu-final-calculate-api/internal/testutil"
 	mocks "edu-final-calculate-api/internal/testutil/mocks/calculator/service"
 
@@ -34,10 +34,10 @@ func TestAgentService_GetTask(t *testing.T) {
 				repo.EXPECT().GetPendingTask(mock.Anything).Return(&models.Task{
 					ID:            "task1",
 					ExpressionID:  "expr1",
-					ParentTask1ID: sql.Null[string]{V: "parent1", Valid: true},
-					ParentTask2ID: sql.Null[string]{V: "parent2", Valid: true},
-					Arg1:          5,
-					Arg2:          3,
+					ParentTask1ID: sqlz.Some("parent1"),
+					ParentTask2ID: sqlz.Some("parent2"),
+					Arg1:          sqlz.Some[float64](5),
+					Arg2:          sqlz.Some[float64](3),
 					Operation:     models.TaskOperationAddition,
 					OperationTime: time.Second,
 					Status:        models.TaskStatusPending,

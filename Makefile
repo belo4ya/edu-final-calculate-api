@@ -11,21 +11,25 @@ gen-mocks:
 generate: gen-proto gen-mocks
 
 #***** DB
+DB_SQLITE_PATH ?= .data/db.sqlite
+
 .PHONY: migrate
 migrate:
-	go run -tags "sqlite3" github.com/golang-migrate/migrate/v4/cmd/migrate@latest -database sqlite3://.data/db.sqlite -path migrations up
+	mkdir -p $(dir $(DB_SQLITE_PATH)) \
+	&& go run -tags "sqlite3" github.com/golang-migrate/migrate/v4/cmd/migrate@latest -database sqlite3://$(DB_SQLITE_PATH) -path migrations up
 
 #***** Build
 .PHONY: build-calculator
 build-calculator:
-	CGO_ENABLED=0 go build -o ./bin/calculator ./cmd/calculator
+	CGO_ENABLED=1 go build -o ./bin/calculator ./cmd/calculator
+
 .PHONY: build-agent
 build-agent:
 	CGO_ENABLED=0 go build -o ./bin/agent ./cmd/agent
 
 #***** Docker
 .PHONY: up
-up:
+up: migrate
 	docker-compose up
 
 #***** Lint

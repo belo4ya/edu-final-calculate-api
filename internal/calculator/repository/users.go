@@ -1,9 +1,9 @@
-package sqlite
+package repository
 
 import (
 	"context"
 	"database/sql"
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
 	"errors"
 	"fmt"
 

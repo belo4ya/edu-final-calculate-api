@@ -11,7 +11,7 @@ import (
 
 	calctypes "edu-final-calculate-api/internal/calculator/calc/types"
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
 	"edu-final-calculate-api/internal/calculator/server"
 	"edu-final-calculate-api/internal/logging"
 

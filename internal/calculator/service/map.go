@@ -1,7 +1,7 @@
 package service
 
 import (
-	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"edu-final-calculate-api/internal/calculator/repository/models"
 
 	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 
@@ -21,8 +21,8 @@ func mapExpressionToExpressionResponse(expr *models.Expression) *calculatorv1.Ex
 func mapTaskToAgentTaskResponse(task *models.Task) *calculatorv1.Task {
 	return &calculatorv1.Task{
 		Id:            task.ID,
-		Arg1:          task.Arg1,
-		Arg2:          task.Arg2,
+		Arg1:          task.Arg1.V,
+		Arg2:          task.Arg2.V,
 		Operation:     mapTaskOperation(task.Operation),
 		OperationTime: durationpb.New(task.OperationTime),
 	}
@@ -34,8 +34,8 @@ func mapTaskToInternalTaskResponse(task models.Task) *calculatorv1.ListExpressio
 		ExpressionId:   task.ExpressionID,
 		ParentTask_1Id: task.ParentTask1ID.V,
 		ParentTask_2Id: task.ParentTask2ID.V,
-		Arg_1:          task.Arg1,
-		Arg_2:          task.Arg2,
+		Arg_1:          task.Arg1.V,
+		Arg_2:          task.Arg2.V,
 		Operation:      mapTaskOperation(task.Operation),
 		OperationTime:  durationpb.New(task.OperationTime),
 		Status:         mapTaskStatus(task.Status),
