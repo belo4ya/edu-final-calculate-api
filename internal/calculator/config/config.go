@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -15,7 +16,8 @@ type Config struct {
 	HTTPAddr     string `env:"HTTP_ADDR"`
 	DBSQLitePath string `env:"DB_SQLITE_PATH"`
 
-	AuthJWTSecret string `env:"AUTH_JWT_SECRET" secret:""`
+	AuthJWTSecret         string        `env:"AUTH_JWT_SECRET" secret:""`
+	AuthJWTExpirationTime time.Duration `env:"AUTH_JWT_EXPIRATION_TIME"`
 
 	TimeAdditionMs       int `env:"TIME_ADDITION_MS"`
 	TimeSubtractionMs    int `env:"TIME_SUBTRACTION_MS"`
@@ -25,16 +27,17 @@ type Config struct {
 
 func Load() (*Config, error) {
 	conf := &Config{
-		LogLevel:             "info",
-		MgmtAddr:             ":8081",
-		GRPCAddr:             ":50051",
-		HTTPAddr:             ":8080",
-		DBSQLitePath:         ".data/db.sqlite",
-		AuthJWTSecret:        "jwt-secret",
-		TimeAdditionMs:       1000,
-		TimeSubtractionMs:    1000,
-		TimeMultiplicationMs: 1000,
-		TimeDivisionMs:       1000,
+		LogLevel:              "info",
+		MgmtAddr:              ":8081",
+		GRPCAddr:              ":50051",
+		HTTPAddr:              ":8080",
+		DBSQLitePath:          ".data/db.sqlite",
+		AuthJWTSecret:         "jwt-secret",
+		AuthJWTExpirationTime: time.Hour,
+		TimeAdditionMs:        1000,
+		TimeSubtractionMs:     1000,
+		TimeMultiplicationMs:  1000,
+		TimeDivisionMs:        1000,
 	}
 	if err := env.Parse(conf); err != nil {
 		return nil, fmt.Errorf("env parse: %w", err)

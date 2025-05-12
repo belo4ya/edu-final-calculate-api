@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"edu-final-calculate-api/internal/calculator/config"
 	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 	"errors"
 	"fmt"
@@ -27,8 +28,11 @@ type Manager struct {
 	jwtExpirationTime time.Duration
 }
 
-func NewManager(secret string) *Manager {
-	return &Manager{jwtSecret: secret}
+func NewManager(conf *config.Config) *Manager {
+	return &Manager{
+		jwtSecret:         conf.AuthJWTSecret,
+		jwtExpirationTime: conf.AuthJWTExpirationTime,
+	}
 }
 
 // Claims represents the JWT claims for authentication.

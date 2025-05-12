@@ -1,6 +1,9 @@
 package models
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 var (
 	ErrUserExists   = errors.New("user exists")
@@ -11,6 +14,9 @@ type User struct {
 	ID           string `db:"id"`
 	Login        string `db:"login"`
 	PasswordHash string `db:"password_hash"`
+
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type RegisterUserCmd struct {

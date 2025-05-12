@@ -77,7 +77,7 @@ func (s *UserService) Login(ctx context.Context, req *calculatorv1.LoginRequest)
 	})
 	if err != nil {
 		if errors.Is(err, models.ErrUserNotFound) {
-			return nil, status.Error(codes.FailedPrecondition, "user not found")
+			return nil, status.Error(codes.FailedPrecondition, "bad login or password")
 		}
 		return nil, InternalError(fmt.Errorf("get user: %w", err))
 	}

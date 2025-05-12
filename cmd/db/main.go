@@ -1,20 +1,28 @@
 package main
 
 import (
-	"edu-final-calculate-api/internal/calculator/config"
-	"log/slog"
+	"context"
+	"edu-final-calculate-api/internal/calculator/database"
+	repository "edu-final-calculate-api/internal/calculator/repository/sqlite"
+	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
+	"fmt"
+
+	"github.com/samber/lo"
 )
 
 func main() {
-	conf, err := config.Load()
-	if err != nil {
-		panic(err)
-	}
-	slog.Info("load config", "conf", conf.String())
+	ctx := context.Background()
+	db := lo.Must(database.Connect(ctx, "./.data/db.sqlite"))
+	repo := repository.New(db)
 
-	//ctx := context.Background()
-	//_, err := database.Connect(ctx, "./.data/db.db")
-	//if err != nil {
-	//	panic(err)
-	//}
+	//lo.Must0(repo.Register(ctx, models.RegisterUserCmd{
+	//	Login:        "admin",
+	//	PasswordHash: "admin",
+	//}))
+
+	user := lo.Must(repo.GetUser(ctx, models.GetUserCmd{
+		Login:        "admin",
+		PasswordHash: "admin",
+	}))
+	fmt.Println("user:", user)
 }

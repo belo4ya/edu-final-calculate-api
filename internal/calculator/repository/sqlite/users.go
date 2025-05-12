@@ -30,7 +30,11 @@ func (r *Repository) Register(ctx context.Context, cmd models.RegisterUserCmd) e
 }
 
 func (r *Repository) GetUser(ctx context.Context, cmd models.GetUserCmd) (*models.User, error) {
-	const q = `SELECT id, login, password_hash FROM users WHERE login = ? AND password_hash = ?`
+	const q = `
+		SELECT id, login, password_hash, created_at, updated_at
+		FROM users
+		WHERE login = ? AND password_hash = ?
+		`
 
 	var user models.User
 	if err := r.db.GetContext(ctx, &user, q, cmd.Login, cmd.PasswordHash); err != nil {

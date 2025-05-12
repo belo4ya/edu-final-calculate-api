@@ -47,7 +47,7 @@ func run() error {
 	log.InfoContext(ctx, "logger is configured")
 	log.InfoContext(ctx, "config initialized", "config", conf)
 
-	authMgr := auth.NewManager(conf.AuthJWTSecret)
+	authMgr := auth.NewManager(conf)
 
 	mgmtSrv := mgmtserver.New(&mgmtserver.Config{Addr: conf.MgmtAddr})
 	grpcSrv := server.NewGRPCServer(conf, authMgr)

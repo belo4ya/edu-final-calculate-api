@@ -19,7 +19,7 @@ func Load() (*Config, error) {
 	conf := &Config{
 		LogLevel:          "info",
 		MgmtAddr:          ":8082",
-		CalculatorAPIAddr: ":50051",
+		CalculatorAPIAddr: "localhost:50051",
 		ComputingPower:    4,
 	}
 	if err := env.Parse(conf); err != nil {
