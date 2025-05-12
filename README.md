@@ -45,24 +45,24 @@ HTTP API реализован с помощью [grpc-gateway](https://github.co
 
 ### Calculator
 
-- `LOG_LEVEL`: Уровень логирования (по умолчанию: `info`)
-- `MGMT_ADDR`: Адрес сервера управления (по умолчанию: `:8081`)
-- `GRPC_ADDR`: Адрес GRPC сервера (по умолчанию: `:50051`)
-- `HTTP_ADDR`: Адрес HTTP сервера (по умолчанию: `:8080`)
-- `DB_SQLITE_PATH`: Путь к хранилищу базы данных SQLite (по умолчанию: `.data/db.sqlite`)
-- `AUTH_JWT_SECRET`: TODO (по умолчанию: `jwt-secret`)
-- `AUTH_JWT_EXPIRATION_TIME`: TODO (по умолчанию: `1h`)
-- `TIME_ADDITION_MS`: Время в миллисекундах для операций сложения (по умолчанию: `1000`)
-- `TIME_SUBTRACTION_MS`: Время в миллисекундах для операций вычитания (по умолчанию: `1000`)
-- `TIME_MULTIPLICATION_MS`: Время в миллисекундах для операций умножения (по умолчанию: `1000`)
-- `TIME_DIVISION_MS`: Время в миллисекундах для операций деления (по умолчанию: `1000`)
+- `LOG_LEVEL` - уровень логирования (по умолчанию: `info`)
+- `MGMT_ADDR` - адрес сервера управления (по умолчанию: `:8081`)
+- `GRPC_ADDR` - адрес GRPC сервера (по умолчанию: `:50051`)
+- `HTTP_ADDR` - адрес HTTP сервера (по умолчанию: `:8080`)
+- `DB_SQLITE_PATH` - путь к хранилищу базы данных SQLite (по умолчанию: `.data/db.sqlite`)
+- `AUTH_JWT_SECRET` - секретный ключ для подписи JWT токенов (по умолчанию: `jwt-secret`)
+- `AUTH_JWT_EXPIRATION_TIME` - время жизни JWT токена (по умолчанию: `1h`)
+- `TIME_ADDITION_MS` - время в миллисекундах для операций сложения (по умолчанию: `1000`)
+- `TIME_SUBTRACTION_MS` - время в миллисекундах для операций вычитания (по умолчанию: `1000`)
+- `TIME_MULTIPLICATION_MS` - время в миллисекундах для операций умножения (по умолчанию: `1000`)
+- `TIME_DIVISION_MS` - время в миллисекундах для операций деления (по умолчанию: `1000`)
 
 ### Agent
 
-- `LOG_LEVEL`: Уровень логирования (по умолчанию: `info`)
-- `MGMT_ADDR`: Адрес сервера управления (по умолчанию: `:8082`)
-- `CALCULATOR_API_ADDR`: Адрес сервиса Calculator API (по умолчанию: `localhost:50051`)
-- `COMPUTING_POWER`: Количество одновременных вычислительных задач (по умолчанию: `4`)
+- `LOG_LEVEL` - уровень логирования (по умолчанию: `info`)
+- `MGMT_ADDR` - адрес сервера управления (по умолчанию: `:8082`)
+- `CALCULATOR_API_ADDR` - адрес сервиса Calculator API (по умолчанию: `localhost:50051`)
+- `COMPUTING_POWER` - количество одновременных вычислительных задач (по умолчанию: `4`)
 
 ## 🚀 Запуск
 
@@ -107,7 +107,7 @@ make lint test-cov
 
 Для работы с [Expressions API](#expressions-api) (`/api/v1/calculate`, `/api/v1/expressions`)
 необходима авторизация с помощью Access Token со схемой Bearer.
-По умолчанию доступен пользователь `admin` с паролем `admin`
+По умолчанию доступен пользователь `admin` (пароль `admin`)
 (см. [Примеры curl](#примеры-curl) и [User API](#users-api)):
 
 ```shell
@@ -117,16 +117,14 @@ curl -X 'POST' 'http://localhost:8080/api/v1/login' \
   "password": "admin"
 }'
 
-#{
-#  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2luZm8iOnsiaWQiOiIwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImxvZ2luIjoiYWRtaW4ifSwic3ViIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJleHAiOjE3NDcwODM0NTEsImlhdCI6MTc0NzA3OTg1MX0.oAS86_fHMNqzqTXcCdQqbH_c5pFtVHg9HrcJ4hy9x_0"
-#}
+#{"accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2luZm8iOnsiaWQiOiIwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImxvZ2luIjoiYWRtaW4ifSwic3ViIjoiMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJleHAiOjE3NDcwODM0NTEsImlhdCI6MTc0NzA3OTg1MX0.oAS86_fHMNqzqTXcCdQqbH_c5pFtVHg9HrcJ4hy9x_0"}
 ```
 
 ### Примеры curl
 
 #### Users API
 
-TODO:
+Регистрация нового пользователя:
 
 ```shell
 curl -X 'POST' 'http://localhost:8080/api/v1/register' \
@@ -142,7 +140,7 @@ curl -X 'POST' 'http://localhost:8080/api/v1/register' \
 {}
 ```
 
-TODO:
+Попытка регистрации существующего пользователя:
 
 ```shell
 curl -X 'POST' 'http://localhost:8080/api/v1/register' \
@@ -162,7 +160,7 @@ curl -X 'POST' 'http://localhost:8080/api/v1/register' \
 }
 ```
 
-TODO:
+Авторизация с корректными учетными данными:
 
 ```shell
 curl -X 'POST' 'http://localhost:8080/api/v1/login' \
@@ -180,7 +178,7 @@ curl -X 'POST' 'http://localhost:8080/api/v1/login' \
 }
 ```
 
-TODO:
+Авторизация с некорректными учетными данными:
 
 ```shell
 curl -X 'POST' 'http://localhost:8080/api/v1/login' \
@@ -205,14 +203,34 @@ curl -X 'POST' 'http://localhost:8080/api/v1/login' \
 Получить Access Token:
 
 ```shell
-#TODO
-ACCESS_TOKEN=
+ACCESS_TOKEN=$(curl -s -X 'POST' 'http://localhost:8080/api/v1/login' \
+  -d '{"login": "admin", "password": "admin"}' | jq -r '.accessToken')
+```
+
+Попытка неавторизованного доступа:
+
+```shell
+curl -X 'POST' 'http://localhost:8080/api/v1/calculate' \
+  -d '{
+  "expression": "2 + 2 * 2"
+}'
+```
+
+Ответ с кодом 401:
+
+```json
+{
+  "code": 16,
+  "message": "Request unauthenticated with bearer",
+  "details": []
+}
 ```
 
 Отправка арифметического выражения на вычисление:
 
 ```shell
 curl -X 'POST' 'http://localhost:8080/api/v1/calculate' \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
   -d '{
   "expression": "2 + 2 * 2"
 }'
@@ -222,7 +240,7 @@ curl -X 'POST' 'http://localhost:8080/api/v1/calculate' \
 
 ```json
 {
-  "id": "cv5t4a3j3vq37o313p5g"
+  "id": "d0h5l4r0u2hs73euojeg"
 }
 ```
 
@@ -230,6 +248,7 @@ curl -X 'POST' 'http://localhost:8080/api/v1/calculate' \
 
 ```shell
 curl -X 'POST' 'http://localhost:8080/api/v1/calculate' \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
   -d '{
   "expression": "1+"
 }'
@@ -248,7 +267,8 @@ curl -X 'POST' 'http://localhost:8080/api/v1/calculate' \
 Получение информации о конкретном выражении по его идентификатору:
 
 ```shell
-curl 'http://localhost:8080/api/v1/expressions/cv5t97rj3vq3pl6kh1u0'
+curl 'http://localhost:8080/api/v1/expressions/d0h5l4r0u2hs73euojeg' \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 Ответ с кодом 200:
@@ -256,10 +276,10 @@ curl 'http://localhost:8080/api/v1/expressions/cv5t97rj3vq3pl6kh1u0'
 ```json
 {
   "expression": {
-    "id": "cv5t97rj3vq3pl6kh1u0",
+    "id": "d0h5l4r0u2hs73euojeg",
     "expression": "2 + 2 * 2",
-    "status": "EXPRESSION_STATUS_PENDING",
-    "result": 0
+    "status": "EXPRESSION_STATUS_COMPLETED",
+    "result": 6
   }
 }
 ```
@@ -267,7 +287,8 @@ curl 'http://localhost:8080/api/v1/expressions/cv5t97rj3vq3pl6kh1u0'
 Запрос несуществующего выражения:
 
 ```shell
-curl 'http://localhost:8080/api/v1/expressions/notexists'
+curl 'http://localhost:8080/api/v1/expressions/notexists' \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 Ответ с кодом 404:
@@ -283,7 +304,8 @@ curl 'http://localhost:8080/api/v1/expressions/notexists'
 Получение списка всех отправленных выражений:
 
 ```shell
-curl 'http://localhost:8080/api/v1/expressions'
+curl 'http://localhost:8080/api/v1/expressions' \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 Ответ с кодом 200:
@@ -316,7 +338,8 @@ curl 'http://localhost:8080/api/v1/expressions'
 Получение всех задач для конкретного выражения (полезно для отладки):
 
 ```shell
-curl 'http://localhost:8080/api/v1/expressions/cv5rfcrj3vqdpq0e15b0/tasks'
+curl 'http://localhost:8080/api/v1/expressions/d0h5l4r0u2hs73euojeg/tasks' \
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 Ответ с кодом 200:
@@ -325,34 +348,34 @@ curl 'http://localhost:8080/api/v1/expressions/cv5rfcrj3vqdpq0e15b0/tasks'
 {
   "tasks": [
     {
-      "id": "cv5te3jj3vq46au1kjeg",
-      "expressionId": "cv5te3jj3vq46au1kjfg",
+      "id": "d0h5l4r0u2hs73euojdg",
+      "expressionId": "d0h5l4r0u2hs73euojeg",
       "parentTask1Id": "",
       "parentTask2Id": "",
       "arg1": 2,
       "arg2": 2,
       "operation": "TASK_OPERATION_MULTIPLICATION",
       "operationTime": "1s",
-      "status": "TASK_STATUS_PENDING",
-      "result": 0,
+      "status": "TASK_STATUS_COMPLETED",
+      "result": 4,
       "expireAt": "0001-01-01T00:00:00Z",
-      "createdAt": "2025-03-08T05:35:10.982839Z",
-      "updatedAt": "2025-03-08T05:35:10.982839Z"
+      "createdAt": "2025-05-12T20:31:15.878995795Z",
+      "updatedAt": "2025-05-12T20:31:17.345906962Z"
     },
     {
-      "id": "cv5te3jj3vq46au1kjf0",
-      "expressionId": "cv5te3jj3vq46au1kjfg",
+      "id": "d0h5l4r0u2hs73euoje0",
+      "expressionId": "d0h5l4r0u2hs73euojeg",
       "parentTask1Id": "",
-      "parentTask2Id": "cv5te3jj3vq46au1kjeg",
+      "parentTask2Id": "d0h5l4r0u2hs73euojdg",
       "arg1": 2,
-      "arg2": 0,
+      "arg2": 4,
       "operation": "TASK_OPERATION_ADDITION",
       "operationTime": "1s",
-      "status": "TASK_STATUS_PENDING",
-      "result": 0,
+      "status": "TASK_STATUS_COMPLETED",
+      "result": 6,
       "expireAt": "0001-01-01T00:00:00Z",
-      "createdAt": "2025-03-08T05:35:10.982839Z",
-      "updatedAt": "2025-03-08T05:35:10.982839Z"
+      "createdAt": "2025-05-12T20:31:15.878995795Z",
+      "updatedAt": "2025-05-12T20:31:18.375868004Z"
     }
   ]
 }
