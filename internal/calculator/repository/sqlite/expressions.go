@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/huandu/go-sqlbuilder"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/xid"
 )
 
@@ -69,7 +70,7 @@ func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd mo
 		})
 	}
 
-	sb := sqlbuilder.NewInsertBuilder().InsertInto("tasks").Cols(
+	sb := sqlbuilder.InsertInto("tasks").Cols(
 		"id",
 		"expression_id",
 		"parent_task_1_id",
@@ -179,15 +180,130 @@ func (r *Repository) ListExpressionTasks(ctx context.Context, userID string, exp
 
 // GetPendingTask retrieves and claims the first available pending task.
 // Returns [models.ErrNoPendingTasks] if there are no pending tasks available.
-func (r *Repository) GetPendingTask(ctx context.Context) (models.Task, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *Repository) GetPendingTask(ctx context.Context) (*models.Task, error) {
+	const q = `
+        UPDATE tasks
+		SET status     = :status_in_progress,
+			updated_at = :updated_at
+		WHERE id = ( SELECT id FROM tasks WHERE status = :status_pending ORDER BY created_at LIMIT 1 )
+		RETURNING id, expression_id, parent_task_1_id, parent_task_2_id,
+			arg1, arg2, operation, operation_time, status, result,
+			expire_at, created_at, updated_at
+    `
+
+	row, err := r.db.NamedQueryContext(ctx, q, map[string]any{
+		"status_in_progress": models.TaskStatusInProgress,
+		"updated_at":         time.Now().UTC(),
+		"status_pending":     models.TaskStatusPending,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("db query: %w", err)
+	}
+	defer func(row *sqlx.Rows) {
+		_ = row.Close()
+	}(row)
+
+	if !row.Next() {
+		return nil, models.ErrNoPendingTasks
+	}
+
+	var task models.Task
+	if err := row.StructScan(&task); err != nil {
+		return nil, fmt.Errorf("scan task: %w", err)
+	}
+
+	return &task, nil
 }
 
 // FinishTask updates a task's status and result, and handles subsequent operations
 // like updating related tasks, enqueueing child tasks, or completing expressions.
 // Returns [models.ErrTaskNotFound] if the task doesn't exist.
 func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) error {
-	//TODO implement me
-	panic("implement me")
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	now := time.Now()
+
+	// Update the task with the result
+	result, err := tx.ExecContext(ctx, `
+		UPDATE tasks
+		SET status = ?, 
+		    result = ?, 
+		    updated_at = ?,
+		    expire_at = NULL
+		WHERE id = ?
+	`, cmd.Status, cmd.Result, now, cmd.TaskID)
+
+	if err != nil {
+		return fmt.Errorf("failed to update task: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("task not found: %s", cmd.TaskID)
+	}
+
+	// Check if we need to update the expression status
+	var expressionID string
+	err = tx.QueryRowContext(ctx, "SELECT expression_id FROM tasks WHERE id = ?", cmd.TaskID).Scan(&expressionID)
+	if err != nil {
+		return fmt.Errorf("failed to get expression ID: %w", err)
+	}
+
+	// Count pending/in-progress tasks for this expression
+	var unfinishedCount int
+	err = tx.QueryRowContext(ctx, `
+		SELECT COUNT(*) 
+		FROM tasks 
+		WHERE expression_id = ? AND status IN ('pending', 'in_progress')
+	`, expressionID).Scan(&unfinishedCount)
+
+	if err != nil {
+		return fmt.Errorf("failed to count unfinished tasks: %w", err)
+	}
+
+	// If no tasks are pending, the expression is completed
+	if unfinishedCount == 0 {
+		// Find the root task (which has no parents) to get the final result
+		var rootResult float64
+		err = tx.QueryRowContext(ctx, `
+			SELECT result 
+			FROM tasks 
+			WHERE expression_id = ? AND parent_task_1_id IS NULL AND parent_task_2_id IS NULL
+		`, expressionID).Scan(&rootResult)
+
+		if err != nil {
+			return fmt.Errorf("failed to get root task result: %w", err)
+		}
+
+		// Update the expression with the final result
+		_, err = tx.ExecContext(ctx, `
+			UPDATE expressions
+			SET status = 'completed', 
+			    result = ?,
+			    updated_at = ?
+			WHERE id = ?
+		`, rootResult, now, expressionID)
+
+		if err != nil {
+			return fmt.Errorf("failed to update expression: %w", err)
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }

@@ -53,4 +53,4 @@ CREATE TABLE tasks
 
 CREATE INDEX idx_tasks_expression_id ON tasks (expression_id);
 CREATE INDEX idx_tasks_parent_tasks ON tasks (parent_task_1_id, parent_task_2_id);
-CREATE INDEX idx_tasks_status_updated ON tasks (status, updated_at);
+CREATE INDEX idx_tasks_status_created ON tasks (status, created_at);
