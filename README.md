@@ -28,8 +28,14 @@ HTTP API реализован с помощью [grpc-gateway](https://github.co
 Решил поразбираться с [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway)
 и [buf.build](https://buf.build/) для генерации.
 
+Интеграционные тесты для работы с SQLite можно найти в
+[internal/calculator/repository/](internal/calculator/repository).
+
 Для генерации mock'ов используется [mockery](https://github.com/vektra/mockery)
 (см. [internal/testutil/](internal/testutil)).
+
+У приложения есть миграции ([migrations/](migrations)).
+Также с помощью миграций создается базовый пользователь `admin` (пароль `admin`).
 
 Калькулятор ([calculator/calc/](internal/calculator/calc)) - не самая сильная часть этого приложения,
 можно убедиться в этом по тестам с флагом skip [calculator/calc/calc_test.go](internal/calculator/calc/calc_test.go).
