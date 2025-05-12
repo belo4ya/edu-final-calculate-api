@@ -8,7 +8,7 @@ import (
 	"math"
 
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/models"
+	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 	"edu-final-calculate-api/internal/logging"
 	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 
@@ -20,7 +20,7 @@ import (
 )
 
 type AgentRepository interface {
-	GetPendingTask(context.Context) (models.Task, error)
+	GetPendingTask(context.Context) (*models.Task, error)
 	FinishTask(context.Context, models.FinishTaskCmd) error
 }
 

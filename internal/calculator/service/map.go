@@ -1,7 +1,7 @@
 package service
 
 import (
-	"edu-final-calculate-api/internal/calculator/repository/models"
+	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 
 	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 
@@ -9,16 +9,16 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func mapExpressionToExpressionResponse(expr models.Expression) *calculatorv1.Expression {
+func mapExpressionToExpressionResponse(expr *models.Expression) *calculatorv1.Expression {
 	return &calculatorv1.Expression{
 		Id:         expr.ID,
 		Expression: expr.Expression,
 		Status:     mapExpressionStatus(expr.Status),
-		Result:     expr.Result,
+		Result:     expr.Result.V,
 	}
 }
 
-func mapTaskToAgentTaskResponse(task models.Task) *calculatorv1.Task {
+func mapTaskToAgentTaskResponse(task *models.Task) *calculatorv1.Task {
 	return &calculatorv1.Task{
 		Id:            task.ID,
 		Arg1:          task.Arg1,
@@ -32,15 +32,15 @@ func mapTaskToInternalTaskResponse(task models.Task) *calculatorv1.ListExpressio
 	return &calculatorv1.ListExpressionTasksResponse_Task{
 		Id:             task.ID,
 		ExpressionId:   task.ExpressionID,
-		ParentTask_1Id: task.ParentTask1ID,
-		ParentTask_2Id: task.ParentTask2ID,
+		ParentTask_1Id: task.ParentTask1ID.V,
+		ParentTask_2Id: task.ParentTask2ID.V,
 		Arg_1:          task.Arg1,
 		Arg_2:          task.Arg2,
 		Operation:      mapTaskOperation(task.Operation),
 		OperationTime:  durationpb.New(task.OperationTime),
 		Status:         mapTaskStatus(task.Status),
-		Result:         task.Result,
-		ExpireAt:       timestamppb.New(task.ExpireAt),
+		Result:         task.Result.V,
+		ExpireAt:       timestamppb.New(task.ExpireAt.V),
 		CreatedAt:      timestamppb.New(task.CreatedAt),
 		UpdatedAt:      timestamppb.New(task.UpdatedAt),
 	}

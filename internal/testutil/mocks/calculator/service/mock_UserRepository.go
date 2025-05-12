@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	models "edu-final-calculate-api/internal/calculator/repository/models"
+	models "edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -22,27 +22,29 @@ func (_m *MockUserRepository) EXPECT() *MockUserRepository_Expecter {
 	return &MockUserRepository_Expecter{mock: &_m.Mock}
 }
 
-// GetUser provides a mock function with given fields: _a0, _a1
-func (_m *MockUserRepository) GetUser(_a0 context.Context, _a1 models.GetUserCmd) (models.User, error) {
-	ret := _m.Called(_a0, _a1)
+// GetUser provides a mock function with given fields: ctx, cmd
+func (_m *MockUserRepository) GetUser(ctx context.Context, cmd models.GetUserCmd) (*models.User, error) {
+	ret := _m.Called(ctx, cmd)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUser")
 	}
 
-	var r0 models.User
+	var r0 *models.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.GetUserCmd) (models.User, error)); ok {
-		return rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, models.GetUserCmd) (*models.User, error)); ok {
+		return rf(ctx, cmd)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, models.GetUserCmd) models.User); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, models.GetUserCmd) *models.User); ok {
+		r0 = rf(ctx, cmd)
 	} else {
-		r0 = ret.Get(0).(models.User)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, models.GetUserCmd) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, cmd)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -56,32 +58,32 @@ type MockUserRepository_GetUser_Call struct {
 }
 
 // GetUser is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 models.GetUserCmd
-func (_e *MockUserRepository_Expecter) GetUser(_a0 interface{}, _a1 interface{}) *MockUserRepository_GetUser_Call {
-	return &MockUserRepository_GetUser_Call{Call: _e.mock.On("GetUser", _a0, _a1)}
+//   - ctx context.Context
+//   - cmd models.GetUserCmd
+func (_e *MockUserRepository_Expecter) GetUser(ctx interface{}, cmd interface{}) *MockUserRepository_GetUser_Call {
+	return &MockUserRepository_GetUser_Call{Call: _e.mock.On("GetUser", ctx, cmd)}
 }
 
-func (_c *MockUserRepository_GetUser_Call) Run(run func(_a0 context.Context, _a1 models.GetUserCmd)) *MockUserRepository_GetUser_Call {
+func (_c *MockUserRepository_GetUser_Call) Run(run func(ctx context.Context, cmd models.GetUserCmd)) *MockUserRepository_GetUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(models.GetUserCmd))
 	})
 	return _c
 }
 
-func (_c *MockUserRepository_GetUser_Call) Return(_a0 models.User, _a1 error) *MockUserRepository_GetUser_Call {
+func (_c *MockUserRepository_GetUser_Call) Return(_a0 *models.User, _a1 error) *MockUserRepository_GetUser_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockUserRepository_GetUser_Call) RunAndReturn(run func(context.Context, models.GetUserCmd) (models.User, error)) *MockUserRepository_GetUser_Call {
+func (_c *MockUserRepository_GetUser_Call) RunAndReturn(run func(context.Context, models.GetUserCmd) (*models.User, error)) *MockUserRepository_GetUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Register provides a mock function with given fields: _a0, _a1
-func (_m *MockUserRepository) Register(_a0 context.Context, _a1 models.RegisterUserCmd) error {
-	ret := _m.Called(_a0, _a1)
+// Register provides a mock function with given fields: ctx, cmd
+func (_m *MockUserRepository) Register(ctx context.Context, cmd models.RegisterUserCmd) error {
+	ret := _m.Called(ctx, cmd)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Register")
@@ -89,7 +91,7 @@ func (_m *MockUserRepository) Register(_a0 context.Context, _a1 models.RegisterU
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, models.RegisterUserCmd) error); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, cmd)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -103,13 +105,13 @@ type MockUserRepository_Register_Call struct {
 }
 
 // Register is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 models.RegisterUserCmd
-func (_e *MockUserRepository_Expecter) Register(_a0 interface{}, _a1 interface{}) *MockUserRepository_Register_Call {
-	return &MockUserRepository_Register_Call{Call: _e.mock.On("Register", _a0, _a1)}
+//   - ctx context.Context
+//   - cmd models.RegisterUserCmd
+func (_e *MockUserRepository_Expecter) Register(ctx interface{}, cmd interface{}) *MockUserRepository_Register_Call {
+	return &MockUserRepository_Register_Call{Call: _e.mock.On("Register", ctx, cmd)}
 }
 
-func (_c *MockUserRepository_Register_Call) Run(run func(_a0 context.Context, _a1 models.RegisterUserCmd)) *MockUserRepository_Register_Call {
+func (_c *MockUserRepository_Register_Call) Run(run func(ctx context.Context, cmd models.RegisterUserCmd)) *MockUserRepository_Register_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(models.RegisterUserCmd))
 	})

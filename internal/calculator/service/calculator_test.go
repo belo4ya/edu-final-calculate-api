@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"edu-final-calculate-api/internal/calculator/auth"
 	"fmt"
 	"testing"
 
 	calctypes "edu-final-calculate-api/internal/calculator/calc/types"
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/models"
+	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 	"edu-final-calculate-api/internal/testutil"
 	mocks "edu-final-calculate-api/internal/testutil/mocks/calculator/service"
 
@@ -19,6 +21,9 @@ import (
 )
 
 func TestCalculatorService_Calculate(t *testing.T) {
+	userID := "user-id"
+	authCtx := auth.WithContext(context.Background(), auth.UserInfo{ID: userID, Login: "user-login"})
+
 	conf := &config.Config{
 		TimeAdditionMs:       1000,
 		TimeSubtractionMs:    1000,
@@ -54,13 +59,13 @@ func TestCalculatorService_Calculate(t *testing.T) {
 				})
 
 				repo.EXPECT().CreateExpression(mock.Anything,
-					models.CreateExpressionCmd{Expression: "1+2*3"},
-					mock.MatchedBy(func(tasks []models.CreateExpressionTaskCmd) bool {
-						return len(tasks) == 2
+					userID,
+					mock.MatchedBy(func(cmd models.CreateExpressionCmd) bool {
+						return cmd.Expression == "1+2*3" && len(cmd.Tasks) == 2
 					})).Return("expr123", nil)
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx: authCtx,
 				req: &calculatorv1.CalculateRequest{
 					Expression: "1+2*3",
 				},
@@ -74,7 +79,7 @@ func TestCalculatorService_Calculate(t *testing.T) {
 				calc.EXPECT().Parse("1++2").Return(nil, calctypes.ErrInvalidExpr)
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx: authCtx,
 				req: &calculatorv1.CalculateRequest{
 					Expression: "1++2",
 				},
@@ -88,7 +93,7 @@ func TestCalculatorService_Calculate(t *testing.T) {
 				calc.EXPECT().Parse(mock.Anything).Return(nil, assert.AnError)
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx: authCtx,
 				req: &calculatorv1.CalculateRequest{
 					Expression: "1+2",
 				},
@@ -113,7 +118,7 @@ func TestCalculatorService_Calculate(t *testing.T) {
 					Return("", assert.AnError)
 			},
 			args: args{
-				ctx: context.Background(),
+				ctx: authCtx,
 				req: &calculatorv1.CalculateRequest{
 					Expression: "1+2",
 				},
@@ -140,6 +145,9 @@ func TestCalculatorService_Calculate(t *testing.T) {
 }
 
 func TestCalculatorService_ListExpressions(t *testing.T) {
+	userID := "user-id"
+	authCtx := auth.WithContext(context.Background(), auth.UserInfo{ID: userID, Login: "user-login"})
+
 	tests := []struct {
 		name       string
 		setupMocks func(calc *mocks.MockCalculator, repo *mocks.MockCalculatorRepository)
@@ -149,12 +157,12 @@ func TestCalculatorService_ListExpressions(t *testing.T) {
 		{
 			name: "successful listing with multiple expressions",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().ListExpressions(mock.Anything).Return([]models.Expression{
+				repo.EXPECT().ListExpressions(mock.Anything, userID).Return([]models.Expression{
 					{
 						ID:         "expr1",
 						Expression: "1+2",
 						Status:     models.ExpressionStatusCompleted,
-						Result:     3,
+						Result:     sql.Null[float64]{V: 3, Valid: true},
 					},
 					{
 						ID:         "expr2",
@@ -183,7 +191,7 @@ func TestCalculatorService_ListExpressions(t *testing.T) {
 		{
 			name: "successful listing with empty result",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().ListExpressions(mock.Anything).Return([]models.Expression{}, nil)
+				repo.EXPECT().ListExpressions(mock.Anything, mock.Anything).Return([]models.Expression{}, nil)
 			},
 			want: &calculatorv1.ListExpressionsResponse{
 				Expressions: []*calculatorv1.Expression{},
@@ -193,7 +201,7 @@ func TestCalculatorService_ListExpressions(t *testing.T) {
 		{
 			name: "repository error",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().ListExpressions(mock.Anything).Return(nil, assert.AnError)
+				repo.EXPECT().ListExpressions(mock.Anything, mock.Anything).Return(nil, assert.AnError)
 			},
 			want:    nil,
 			wantErr: assert.Error,
@@ -202,7 +210,7 @@ func TestCalculatorService_ListExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := authCtx
 			calc := mocks.NewMockCalculator(t)
 			repo := mocks.NewMockCalculatorRepository(t)
 
@@ -219,6 +227,9 @@ func TestCalculatorService_ListExpressions(t *testing.T) {
 }
 
 func TestCalculatorService_GetExpression(t *testing.T) {
+	userID := "user-id"
+	authCtx := auth.WithContext(context.Background(), auth.UserInfo{ID: userID, Login: "user-login"})
+
 	type args struct {
 		req *calculatorv1.GetExpressionRequest
 	}
@@ -232,11 +243,11 @@ func TestCalculatorService_GetExpression(t *testing.T) {
 		{
 			name: "existing expression found",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().GetExpression(mock.Anything, "expr1").Return(models.Expression{
+				repo.EXPECT().GetExpression(mock.Anything, userID, "expr1").Return(&models.Expression{
 					ID:         "expr1",
 					Expression: "1+2*3",
 					Status:     models.ExpressionStatusCompleted,
-					Result:     7,
+					Result:     sql.Null[float64]{V: 7, Valid: true},
 				}, nil)
 			},
 			args: args{
@@ -257,7 +268,7 @@ func TestCalculatorService_GetExpression(t *testing.T) {
 		{
 			name: "in-progress expression found",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().GetExpression(mock.Anything, "expr2").Return(models.Expression{
+				repo.EXPECT().GetExpression(mock.Anything, userID, "expr2").Return(&models.Expression{
 					ID:         "expr2",
 					Expression: "5*8-3",
 					Status:     models.ExpressionStatusInProgress,
@@ -280,7 +291,7 @@ func TestCalculatorService_GetExpression(t *testing.T) {
 		{
 			name: "expression not found",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().GetExpression(mock.Anything, "non-existent").Return(models.Expression{}, models.ErrExpressionNotFound)
+				repo.EXPECT().GetExpression(mock.Anything, userID, "non-existent").Return(nil, models.ErrExpressionNotFound)
 			},
 			args: args{
 				req: &calculatorv1.GetExpressionRequest{
@@ -293,7 +304,7 @@ func TestCalculatorService_GetExpression(t *testing.T) {
 		{
 			name: "repository error",
 			setupMocks: func(_ *mocks.MockCalculator, repo *mocks.MockCalculatorRepository) {
-				repo.EXPECT().GetExpression(mock.Anything, mock.Anything).Return(models.Expression{}, assert.AnError)
+				repo.EXPECT().GetExpression(mock.Anything, mock.Anything, mock.Anything).Return(nil, assert.AnError)
 			},
 			args: args{
 				req: &calculatorv1.GetExpressionRequest{
@@ -307,7 +318,7 @@ func TestCalculatorService_GetExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
+			ctx := authCtx
 			calc := mocks.NewMockCalculator(t)
 			repo := mocks.NewMockCalculatorRepository(t)
 

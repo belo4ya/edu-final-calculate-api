@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	models "edu-final-calculate-api/internal/calculator/repository/models"
+	models "edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -70,22 +70,24 @@ func (_c *MockAgentRepository_FinishTask_Call) RunAndReturn(run func(context.Con
 }
 
 // GetPendingTask provides a mock function with given fields: _a0
-func (_m *MockAgentRepository) GetPendingTask(_a0 context.Context) (models.Task, error) {
+func (_m *MockAgentRepository) GetPendingTask(_a0 context.Context) (*models.Task, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetPendingTask")
 	}
 
-	var r0 models.Task
+	var r0 *models.Task
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (models.Task, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) (*models.Task, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) models.Task); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) *models.Task); ok {
 		r0 = rf(_a0)
 	} else {
-		r0 = ret.Get(0).(models.Task)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Task)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
@@ -115,12 +117,12 @@ func (_c *MockAgentRepository_GetPendingTask_Call) Run(run func(_a0 context.Cont
 	return _c
 }
 
-func (_c *MockAgentRepository_GetPendingTask_Call) Return(_a0 models.Task, _a1 error) *MockAgentRepository_GetPendingTask_Call {
+func (_c *MockAgentRepository_GetPendingTask_Call) Return(_a0 *models.Task, _a1 error) *MockAgentRepository_GetPendingTask_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockAgentRepository_GetPendingTask_Call) RunAndReturn(run func(context.Context) (models.Task, error)) *MockAgentRepository_GetPendingTask_Call {
+func (_c *MockAgentRepository_GetPendingTask_Call) RunAndReturn(run func(context.Context) (*models.Task, error)) *MockAgentRepository_GetPendingTask_Call {
 	_c.Call.Return(run)
 	return _c
 }

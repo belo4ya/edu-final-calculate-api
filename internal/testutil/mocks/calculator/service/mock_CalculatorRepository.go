@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	models "edu-final-calculate-api/internal/calculator/repository/models"
+	models "edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -23,7 +23,7 @@ func (_m *MockCalculatorRepository) EXPECT() *MockCalculatorRepository_Expecter 
 }
 
 // CreateExpression provides a mock function with given fields: _a0, _a1, _a2
-func (_m *MockCalculatorRepository) CreateExpression(_a0 context.Context, _a1 models.CreateExpressionCmd, _a2 []models.CreateExpressionTaskCmd) (string, error) {
+func (_m *MockCalculatorRepository) CreateExpression(_a0 context.Context, _a1 string, _a2 models.CreateExpressionCmd) (string, error) {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	if len(ret) == 0 {
@@ -32,16 +32,16 @@ func (_m *MockCalculatorRepository) CreateExpression(_a0 context.Context, _a1 mo
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, models.CreateExpressionCmd, []models.CreateExpressionTaskCmd) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, models.CreateExpressionCmd) (string, error)); ok {
 		return rf(_a0, _a1, _a2)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, models.CreateExpressionCmd, []models.CreateExpressionTaskCmd) string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, models.CreateExpressionCmd) string); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, models.CreateExpressionCmd, []models.CreateExpressionTaskCmd) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, models.CreateExpressionCmd) error); ok {
 		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
@@ -57,15 +57,15 @@ type MockCalculatorRepository_CreateExpression_Call struct {
 
 // CreateExpression is a helper method to define mock.On call
 //   - _a0 context.Context
-//   - _a1 models.CreateExpressionCmd
-//   - _a2 []models.CreateExpressionTaskCmd
+//   - _a1 string
+//   - _a2 models.CreateExpressionCmd
 func (_e *MockCalculatorRepository_Expecter) CreateExpression(_a0 interface{}, _a1 interface{}, _a2 interface{}) *MockCalculatorRepository_CreateExpression_Call {
 	return &MockCalculatorRepository_CreateExpression_Call{Call: _e.mock.On("CreateExpression", _a0, _a1, _a2)}
 }
 
-func (_c *MockCalculatorRepository_CreateExpression_Call) Run(run func(_a0 context.Context, _a1 models.CreateExpressionCmd, _a2 []models.CreateExpressionTaskCmd)) *MockCalculatorRepository_CreateExpression_Call {
+func (_c *MockCalculatorRepository_CreateExpression_Call) Run(run func(_a0 context.Context, _a1 string, _a2 models.CreateExpressionCmd)) *MockCalculatorRepository_CreateExpression_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.CreateExpressionCmd), args[2].([]models.CreateExpressionTaskCmd))
+		run(args[0].(context.Context), args[1].(string), args[2].(models.CreateExpressionCmd))
 	})
 	return _c
 }
@@ -75,32 +75,34 @@ func (_c *MockCalculatorRepository_CreateExpression_Call) Return(_a0 string, _a1
 	return _c
 }
 
-func (_c *MockCalculatorRepository_CreateExpression_Call) RunAndReturn(run func(context.Context, models.CreateExpressionCmd, []models.CreateExpressionTaskCmd) (string, error)) *MockCalculatorRepository_CreateExpression_Call {
+func (_c *MockCalculatorRepository_CreateExpression_Call) RunAndReturn(run func(context.Context, string, models.CreateExpressionCmd) (string, error)) *MockCalculatorRepository_CreateExpression_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetExpression provides a mock function with given fields: _a0, _a1
-func (_m *MockCalculatorRepository) GetExpression(_a0 context.Context, _a1 string) (models.Expression, error) {
-	ret := _m.Called(_a0, _a1)
+// GetExpression provides a mock function with given fields: _a0, _a1, _a2
+func (_m *MockCalculatorRepository) GetExpression(_a0 context.Context, _a1 string, _a2 string) (*models.Expression, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetExpression")
 	}
 
-	var r0 models.Expression
+	var r0 *models.Expression
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (models.Expression, error)); ok {
-		return rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*models.Expression, error)); ok {
+		return rf(_a0, _a1, _a2)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) models.Expression); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.Expression); ok {
+		r0 = rf(_a0, _a1, _a2)
 	} else {
-		r0 = ret.Get(0).(models.Expression)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Expression)
+		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -116,30 +118,31 @@ type MockCalculatorRepository_GetExpression_Call struct {
 // GetExpression is a helper method to define mock.On call
 //   - _a0 context.Context
 //   - _a1 string
-func (_e *MockCalculatorRepository_Expecter) GetExpression(_a0 interface{}, _a1 interface{}) *MockCalculatorRepository_GetExpression_Call {
-	return &MockCalculatorRepository_GetExpression_Call{Call: _e.mock.On("GetExpression", _a0, _a1)}
+//   - _a2 string
+func (_e *MockCalculatorRepository_Expecter) GetExpression(_a0 interface{}, _a1 interface{}, _a2 interface{}) *MockCalculatorRepository_GetExpression_Call {
+	return &MockCalculatorRepository_GetExpression_Call{Call: _e.mock.On("GetExpression", _a0, _a1, _a2)}
 }
 
-func (_c *MockCalculatorRepository_GetExpression_Call) Run(run func(_a0 context.Context, _a1 string)) *MockCalculatorRepository_GetExpression_Call {
+func (_c *MockCalculatorRepository_GetExpression_Call) Run(run func(_a0 context.Context, _a1 string, _a2 string)) *MockCalculatorRepository_GetExpression_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
 
-func (_c *MockCalculatorRepository_GetExpression_Call) Return(_a0 models.Expression, _a1 error) *MockCalculatorRepository_GetExpression_Call {
+func (_c *MockCalculatorRepository_GetExpression_Call) Return(_a0 *models.Expression, _a1 error) *MockCalculatorRepository_GetExpression_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockCalculatorRepository_GetExpression_Call) RunAndReturn(run func(context.Context, string) (models.Expression, error)) *MockCalculatorRepository_GetExpression_Call {
+func (_c *MockCalculatorRepository_GetExpression_Call) RunAndReturn(run func(context.Context, string, string) (*models.Expression, error)) *MockCalculatorRepository_GetExpression_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListExpressionTasks provides a mock function with given fields: _a0, _a1
-func (_m *MockCalculatorRepository) ListExpressionTasks(_a0 context.Context, _a1 string) ([]models.Task, error) {
-	ret := _m.Called(_a0, _a1)
+// ListExpressionTasks provides a mock function with given fields: _a0, _a1, _a2
+func (_m *MockCalculatorRepository) ListExpressionTasks(_a0 context.Context, _a1 string, _a2 string) ([]models.Task, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListExpressionTasks")
@@ -147,19 +150,19 @@ func (_m *MockCalculatorRepository) ListExpressionTasks(_a0 context.Context, _a1
 
 	var r0 []models.Task
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) ([]models.Task, error)); ok {
-		return rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) ([]models.Task, error)); ok {
+		return rf(_a0, _a1, _a2)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) []models.Task); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) []models.Task); ok {
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.Task)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -175,13 +178,14 @@ type MockCalculatorRepository_ListExpressionTasks_Call struct {
 // ListExpressionTasks is a helper method to define mock.On call
 //   - _a0 context.Context
 //   - _a1 string
-func (_e *MockCalculatorRepository_Expecter) ListExpressionTasks(_a0 interface{}, _a1 interface{}) *MockCalculatorRepository_ListExpressionTasks_Call {
-	return &MockCalculatorRepository_ListExpressionTasks_Call{Call: _e.mock.On("ListExpressionTasks", _a0, _a1)}
+//   - _a2 string
+func (_e *MockCalculatorRepository_Expecter) ListExpressionTasks(_a0 interface{}, _a1 interface{}, _a2 interface{}) *MockCalculatorRepository_ListExpressionTasks_Call {
+	return &MockCalculatorRepository_ListExpressionTasks_Call{Call: _e.mock.On("ListExpressionTasks", _a0, _a1, _a2)}
 }
 
-func (_c *MockCalculatorRepository_ListExpressionTasks_Call) Run(run func(_a0 context.Context, _a1 string)) *MockCalculatorRepository_ListExpressionTasks_Call {
+func (_c *MockCalculatorRepository_ListExpressionTasks_Call) Run(run func(_a0 context.Context, _a1 string, _a2 string)) *MockCalculatorRepository_ListExpressionTasks_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
 	})
 	return _c
 }
@@ -191,14 +195,14 @@ func (_c *MockCalculatorRepository_ListExpressionTasks_Call) Return(_a0 []models
 	return _c
 }
 
-func (_c *MockCalculatorRepository_ListExpressionTasks_Call) RunAndReturn(run func(context.Context, string) ([]models.Task, error)) *MockCalculatorRepository_ListExpressionTasks_Call {
+func (_c *MockCalculatorRepository_ListExpressionTasks_Call) RunAndReturn(run func(context.Context, string, string) ([]models.Task, error)) *MockCalculatorRepository_ListExpressionTasks_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListExpressions provides a mock function with given fields: _a0
-func (_m *MockCalculatorRepository) ListExpressions(_a0 context.Context) ([]models.Expression, error) {
-	ret := _m.Called(_a0)
+// ListExpressions provides a mock function with given fields: _a0, _a1
+func (_m *MockCalculatorRepository) ListExpressions(_a0 context.Context, _a1 string) ([]models.Expression, error) {
+	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListExpressions")
@@ -206,19 +210,19 @@ func (_m *MockCalculatorRepository) ListExpressions(_a0 context.Context) ([]mode
 
 	var r0 []models.Expression
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]models.Expression, error)); ok {
-		return rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]models.Expression, error)); ok {
+		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []models.Expression); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []models.Expression); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.Expression)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -233,13 +237,14 @@ type MockCalculatorRepository_ListExpressions_Call struct {
 
 // ListExpressions is a helper method to define mock.On call
 //   - _a0 context.Context
-func (_e *MockCalculatorRepository_Expecter) ListExpressions(_a0 interface{}) *MockCalculatorRepository_ListExpressions_Call {
-	return &MockCalculatorRepository_ListExpressions_Call{Call: _e.mock.On("ListExpressions", _a0)}
+//   - _a1 string
+func (_e *MockCalculatorRepository_Expecter) ListExpressions(_a0 interface{}, _a1 interface{}) *MockCalculatorRepository_ListExpressions_Call {
+	return &MockCalculatorRepository_ListExpressions_Call{Call: _e.mock.On("ListExpressions", _a0, _a1)}
 }
 
-func (_c *MockCalculatorRepository_ListExpressions_Call) Run(run func(_a0 context.Context)) *MockCalculatorRepository_ListExpressions_Call {
+func (_c *MockCalculatorRepository_ListExpressions_Call) Run(run func(_a0 context.Context, _a1 string)) *MockCalculatorRepository_ListExpressions_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -249,7 +254,7 @@ func (_c *MockCalculatorRepository_ListExpressions_Call) Return(_a0 []models.Exp
 	return _c
 }
 
-func (_c *MockCalculatorRepository_ListExpressions_Call) RunAndReturn(run func(context.Context) ([]models.Expression, error)) *MockCalculatorRepository_ListExpressions_Call {
+func (_c *MockCalculatorRepository_ListExpressions_Call) RunAndReturn(run func(context.Context, string) ([]models.Expression, error)) *MockCalculatorRepository_ListExpressions_Call {
 	_c.Call.Return(run)
 	return _c
 }

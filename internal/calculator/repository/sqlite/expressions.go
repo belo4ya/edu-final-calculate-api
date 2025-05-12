@@ -71,31 +71,13 @@ func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd mo
 	}
 
 	sb := sqlbuilder.InsertInto("tasks").Cols(
-		"id",
-		"expression_id",
-		"parent_task_1_id",
-		"parent_task_2_id",
-		"arg1",
-		"arg2",
-		"operation",
-		"operation_time",
-		"status",
-		"created_at",
-		"updated_at",
+		"id", "expression_id", "parent_task_1_id", "parent_task_2_id",
+		"arg1", "arg2", "operation", "operation_time", "status", "created_at", "updated_at",
 	)
 	for _, t := range tasks {
 		sb.Values(
-			t.ID,
-			t.ExpressionID,
-			t.ParentTask1ID,
-			t.ParentTask2ID,
-			t.Arg1,
-			t.Arg2,
-			t.Operation,
-			t.OperationTime,
-			t.Status,
-			t.CreatedAt,
-			t.UpdatedAt,
+			t.ID, t.ExpressionID, t.ParentTask1ID, t.ParentTask2ID,
+			t.Arg1, t.Arg2, t.Operation, t.OperationTime, t.Status, t.CreatedAt, t.UpdatedAt,
 		)
 	}
 
@@ -229,12 +211,6 @@ func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) e
 		}
 	}()
 
-	// TODO:
-	// update task status, result, updated_at and RETURNING expression_id
-	// if task status == models.TaskStatusFailed - fail expression and all tasks with not finished status
-	// if isFinalTask(cmd.ID) - complete expression
-	// else - enqueue child tasks (change status from Created to Pending)
-
 	const q = `
         UPDATE tasks
         SET status = :status,
@@ -248,7 +224,7 @@ func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) e
 
 	row, err := sqlx.NamedQueryContext(ctx, tx, q, map[string]any{
 		"status":     cmd.Status,
-		"result":     sql.Null[float64]{V: cmd.Result, Valid: cmd.Status != models.TaskStatusFailed},
+		"result":     sql.Null[float64]{V: cmd.Result, Valid: cmd.Status == models.TaskStatusCompleted},
 		"updated_at": time.Now().UTC(),
 		"id":         cmd.ID,
 	})
@@ -335,6 +311,7 @@ func (r *Repository) isFinalTask(ctx context.Context, tx *sqlx.Tx, taskID string
 }
 
 func (r *Repository) enqueueChildTask(ctx context.Context, tx *sqlx.Tx, completedTask *models.Task) error {
+	// FIXME
 	const q = `
             UPDATE tasks 
             SET status = :status_pending, updated_at = :updated_at

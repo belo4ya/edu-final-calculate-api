@@ -11,6 +11,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/selector"
+	"github.com/samber/lo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -68,7 +69,7 @@ func (m *Manager) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
-		return context.WithValue(ctx, ctxKey{}, claims.UserInfo), nil
+		return WithContext(ctx, claims.UserInfo), nil
 	}
 
 	matchFn := func(ctx context.Context, callMeta interceptors.CallMeta) bool {
@@ -97,6 +98,10 @@ func (m *Manager) validateJWT(s string) (*Claims, error) {
 
 type ctxKey struct{}
 
+func WithContext(ctx context.Context, user UserInfo) context.Context {
+	return context.WithValue(ctx, ctxKey{}, user)
+}
+
 // UserFromContext retrieves UserInfo from context.
 func UserFromContext(ctx context.Context) (UserInfo, bool) {
 	userInfo, ok := ctx.Value(ctxKey{}).(UserInfo)
@@ -104,4 +109,8 @@ func UserFromContext(ctx context.Context) (UserInfo, bool) {
 		return UserInfo{}, false
 	}
 	return userInfo, true
+}
+
+func MustUserIDFromContext(ctx context.Context) string {
+	return lo.Must(UserFromContext(ctx)).ID
 }

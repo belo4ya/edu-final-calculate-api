@@ -5,7 +5,7 @@ import (
 	"crypto/md5"
 	"edu-final-calculate-api/internal/calculator/auth"
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/models"
+	"edu-final-calculate-api/internal/calculator/repository/sqlite/models"
 	"edu-final-calculate-api/internal/logging"
 	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 	"encoding/hex"
@@ -26,8 +26,8 @@ type (
 	}
 
 	UserRepository interface {
-		Register(context.Context, models.RegisterUserCmd) error
-		GetUser(context.Context, models.GetUserCmd) (models.User, error)
+		Register(ctx context.Context, cmd models.RegisterUserCmd) error
+		GetUser(ctx context.Context, cmd models.GetUserCmd) (*models.User, error)
 	}
 )
 

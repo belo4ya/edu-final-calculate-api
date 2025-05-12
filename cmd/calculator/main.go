@@ -3,20 +3,20 @@ package main
 import (
 	"context"
 	"edu-final-calculate-api/internal/calculator/auth"
+	"edu-final-calculate-api/internal/calculator/database"
 	"fmt"
 	"log/slog"
 	"os"
 
 	"edu-final-calculate-api/internal/calculator/calc"
 	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository"
+	repository "edu-final-calculate-api/internal/calculator/repository/sqlite"
 	"edu-final-calculate-api/internal/calculator/server"
 	"edu-final-calculate-api/internal/calculator/service"
 	"edu-final-calculate-api/internal/logging"
 	"edu-final-calculate-api/internal/mgmtserver"
 
 	"github.com/belo4ya/runy"
-	"github.com/dgraph-io/badger/v4"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -53,13 +53,10 @@ func run() error {
 	grpcSrv := server.NewGRPCServer(conf, authMgr)
 	httpSrv := server.NewHTTPServer(conf)
 
-	db, err := badger.Open(badger.DefaultOptions(conf.DBSQLitePath))
+	db, err := database.Connect(ctx, conf.DBSQLitePath)
 	if err != nil {
-		return fmt.Errorf("open badger: %w", err)
+		return fmt.Errorf("db connect: %w", err)
 	}
-	defer func() {
-		_ = db.Close()
-	}()
 
 	repo := repository.New(db)
 
