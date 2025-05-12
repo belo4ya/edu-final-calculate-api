@@ -163,10 +163,7 @@ func TestRepository_RegisterAndGetUser(t *testing.T) {
 	require.NoError(t, err, "Failed to register new user")
 
 	// Try to get the user we just registered
-	getUserCmd := models.GetUserCmd{
-		Login:        registerCmd.Login,
-		PasswordHash: registerCmd.PasswordHash,
-	}
+	getUserCmd := models.GetUserCmd(registerCmd)
 
 	user, err := repo.GetUser(ctx, getUserCmd)
 	require.NoError(t, err, "Failed to get registered user")

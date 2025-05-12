@@ -454,10 +454,7 @@ func createTestUser(t *testing.T, repo *Repository, ctx context.Context) string 
 	err := repo.Register(ctx, cmd)
 	require.NoError(t, err, "Failed to create test user")
 
-	user, err := repo.GetUser(ctx, models.GetUserCmd{
-		Login:        cmd.Login,
-		PasswordHash: cmd.PasswordHash,
-	})
+	user, err := repo.GetUser(ctx, models.GetUserCmd(cmd))
 	require.NoError(t, err, "Failed to get created test user")
 
 	return user.ID
