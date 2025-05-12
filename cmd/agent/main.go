@@ -47,9 +47,9 @@ func run() error {
 
 	mgmtSrv := mgmtserver.New(&mgmtserver.Config{Addr: conf.MgmtAddr})
 
-	_agent := agent.New(conf, log, calculatorClient)
+	agent_ := agent.New(conf, log, calculatorClient)
 
-	runy.Add(mgmtSrv, _agent)
+	runy.Add(mgmtSrv, agent_)
 	if err := runy.Start(ctx); err != nil {
 		return fmt.Errorf("problem with running app: %w", err)
 	}

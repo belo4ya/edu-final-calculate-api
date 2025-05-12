@@ -11,6 +11,8 @@ import (
 	"github.com/rs/xid"
 )
 
+// Register creates a new user account with the provided credentials.
+// Returns [models.ErrUserExists] if a user with the same login already exists.
 func (r *Repository) Register(ctx context.Context, cmd models.RegisterUserCmd) error {
 	const q = `INSERT INTO users (id, login, password_hash) VALUES (?, ?, ?)`
 
@@ -29,6 +31,8 @@ func (r *Repository) Register(ctx context.Context, cmd models.RegisterUserCmd) e
 	return fmt.Errorf("db exec: %w", err)
 }
 
+// GetUser retrieves a user by login and password hash.
+// Returns [models.ErrUserNotFound] if no matching user exists.
 func (r *Repository) GetUser(ctx context.Context, cmd models.GetUserCmd) (*models.User, error) {
 	const q = `
 		SELECT id, login, password_hash, created_at, updated_at

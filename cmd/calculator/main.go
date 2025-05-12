@@ -47,10 +47,10 @@ func run() error {
 	log.InfoContext(ctx, "logger is configured")
 	log.InfoContext(ctx, "config initialized", "config", conf)
 
-	authMgr := auth.NewManager(conf)
+	auth_ := auth.New(conf)
 
 	mgmtSrv := mgmtserver.New(&mgmtserver.Config{Addr: conf.MgmtAddr})
-	grpcSrv := server.NewGRPCServer(conf, authMgr)
+	grpcSrv := server.NewGRPCServer(conf, auth_)
 	httpSrv := server.NewHTTPServer(conf)
 
 	db, err := database.Connect(ctx, conf.DBSQLitePath)
@@ -61,7 +61,7 @@ func run() error {
 	repo := repository.New(db)
 
 	calcSvc := service.NewCalculatorService(conf, log, calc.NewCalculator(), repo)
-	userSvc := service.NewUserService(conf, log, authMgr, repo)
+	userSvc := service.NewUserService(conf, log, auth_, repo)
 	agentSvc := service.NewAgentService(conf, log, repo)
 
 	for i, svc := range []interface {

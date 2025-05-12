@@ -23,38 +23,36 @@ type UserInfo struct {
 	Login string `json:"login"`
 }
 
-type Manager struct {
+type Auth struct {
 	jwtSecret         string
 	jwtExpirationTime time.Duration
 }
 
-func NewManager(conf *config.Config) *Manager {
-	return &Manager{
+func New(conf *config.Config) *Auth {
+	return &Auth{
 		jwtSecret:         conf.AuthJWTSecret,
 		jwtExpirationTime: conf.AuthJWTExpirationTime,
 	}
 }
 
-// Claims represents the JWT claims for authentication.
 type Claims struct {
 	UserInfo UserInfo `json:"user_info"`
 	jwt.RegisteredClaims
 }
 
-// GenerateJWT creates a JWT token for the given user.
-func (m *Manager) GenerateJWT(user UserInfo) (string, error) {
+func (a *Auth) GenerateJWT(user UserInfo) (string, error) {
 	now := time.Now().UTC()
 	claims := &Claims{
 		UserInfo: user,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(m.jwtExpirationTime)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(a.jwtExpirationTime)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   user.ID,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(m.jwtSecret))
+	tokenString, err := token.SignedString([]byte(a.jwtSecret))
 	if err != nil {
 		return "", fmt.Errorf("sign jwt: %w", err)
 	}
@@ -62,14 +60,13 @@ func (m *Manager) GenerateJWT(user UserInfo) (string, error) {
 	return tokenString, nil
 }
 
-// UnaryServerInterceptor returns a gRPC unary server interceptor for authentication.
-func (m *Manager) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+func (a *Auth) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	authFn := func(ctx context.Context) (context.Context, error) {
 		token, err := auth.AuthFromMD(ctx, "bearer")
 		if err != nil {
 			return nil, err
 		}
-		claims, err := m.validateJWT(token)
+		claims, err := a.validateJWT(token)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
@@ -83,13 +80,13 @@ func (m *Manager) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return selector.UnaryServerInterceptor(auth.UnaryServerInterceptor(authFn), selector.MatchFunc(matchFn))
 }
 
-func (m *Manager) validateJWT(s string) (*Claims, error) {
+func (a *Auth) validateJWT(s string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(s, claims, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(m.jwtSecret), nil
+		return []byte(a.jwtSecret), nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("parse jwt: %w", err)
@@ -106,7 +103,6 @@ func WithContext(ctx context.Context, user UserInfo) context.Context {
 	return context.WithValue(ctx, ctxKey{}, user)
 }
 
-// UserFromContext retrieves UserInfo from context.
 func UserFromContext(ctx context.Context) (UserInfo, bool) {
 	userInfo, ok := ctx.Value(ctxKey{}).(UserInfo)
 	if !ok {
