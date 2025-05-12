@@ -5,11 +5,11 @@ import (
 	"log/slog"
 	"os"
 
-	"edu-final-calculate-api/internal/agent"
-	"edu-final-calculate-api/internal/agent/client"
-	"edu-final-calculate-api/internal/agent/config"
-	"edu-final-calculate-api/internal/logging"
-	"edu-final-calculate-api/internal/mgmtserver"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/client"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/logging"
+	"github.com/belo4ya/edu-final-calculate-api/internal/mgmtserver"
 
 	"github.com/belo4ya/runy"
 	"github.com/joho/godotenv"

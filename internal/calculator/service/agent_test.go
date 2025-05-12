@@ -2,18 +2,19 @@ package service
 
 import (
 	"context"
-	"edu-final-calculate-api/internal/calculator/database/sqlz"
 	"fmt"
 	"math"
 	"testing"
 	"time"
 
-	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/models"
-	"edu-final-calculate-api/internal/testutil"
-	mocks "edu-final-calculate-api/internal/testutil/mocks/calculator/service"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/database/sqlz"
 
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
+	"github.com/belo4ya/edu-final-calculate-api/internal/testutil"
+	mocks "github.com/belo4ya/edu-final-calculate-api/internal/testutil/mocks/calculator/service"
+
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

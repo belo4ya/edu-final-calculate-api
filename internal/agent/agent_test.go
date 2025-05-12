@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"edu-final-calculate-api/internal/agent/client"
-	"edu-final-calculate-api/internal/agent/config"
-	"edu-final-calculate-api/internal/testutil"
-	mocks "edu-final-calculate-api/internal/testutil/mocks/agent"
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/client"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/testutil"
+	mocks "github.com/belo4ya/edu-final-calculate-api/internal/testutil/mocks/agent"
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

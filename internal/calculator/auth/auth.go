@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
-	"edu-final-calculate-api/internal/calculator/config"
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/config"
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors"

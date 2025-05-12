@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"edu-final-calculate-api/internal/calculator/database"
 	"path/filepath"
 	"testing"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/database"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"

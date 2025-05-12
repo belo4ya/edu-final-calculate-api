@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"edu-final-calculate-api/internal/calculator/calc/stackx"
-	"edu-final-calculate-api/internal/calculator/calc/types"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/calc/stackx"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/calc/types"
 
 	"github.com/rs/xid"
 )

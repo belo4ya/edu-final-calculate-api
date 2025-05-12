@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"math"
 
-	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository/models"
-	"edu-final-calculate-api/internal/logging"
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
+	"github.com/belo4ya/edu-final-calculate-api/internal/logging"
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

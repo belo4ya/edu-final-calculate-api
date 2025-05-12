@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
-	"edu-final-calculate-api/internal/calculator/auth"
-	"edu-final-calculate-api/internal/calculator/database"
 	"fmt"
 	"log/slog"
 	"os"
 
-	"edu-final-calculate-api/internal/calculator/calc"
-	"edu-final-calculate-api/internal/calculator/config"
-	"edu-final-calculate-api/internal/calculator/repository"
-	"edu-final-calculate-api/internal/calculator/server"
-	"edu-final-calculate-api/internal/calculator/service"
-	"edu-final-calculate-api/internal/logging"
-	"edu-final-calculate-api/internal/mgmtserver"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/auth"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/database"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/calc"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/server"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/service"
+	"github.com/belo4ya/edu-final-calculate-api/internal/logging"
+	"github.com/belo4ya/edu-final-calculate-api/internal/mgmtserver"
 
 	"github.com/belo4ya/runy"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"

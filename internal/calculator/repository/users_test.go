@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"edu-final-calculate-api/internal/calculator/repository/models"
 	"testing"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/mattn/go-sqlite3"

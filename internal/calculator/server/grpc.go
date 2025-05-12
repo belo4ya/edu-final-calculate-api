@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net"
 
-	"edu-final-calculate-api/internal/calculator/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/config"
 
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"

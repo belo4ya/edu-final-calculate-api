@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"edu-final-calculate-api/internal/calculator/calc/types"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/calc/types"
 
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"

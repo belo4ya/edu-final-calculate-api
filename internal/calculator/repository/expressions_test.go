@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
-	"edu-final-calculate-api/internal/calculator/repository/models"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

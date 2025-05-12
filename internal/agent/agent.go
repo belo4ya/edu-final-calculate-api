@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"edu-final-calculate-api/internal/agent/client"
-	"edu-final-calculate-api/internal/agent/config"
-	"edu-final-calculate-api/internal/logging"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/client"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/logging"
 
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	"github.com/avast/retry-go/v4"
 )

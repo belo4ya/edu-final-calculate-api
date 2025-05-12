@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"edu-final-calculate-api/internal/calculator/repository/models"
 	"errors"
 	"fmt"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/rs/xid"

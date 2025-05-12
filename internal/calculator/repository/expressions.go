@@ -3,10 +3,11 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"edu-final-calculate-api/internal/calculator/repository/models"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
 
 	"github.com/huandu/go-sqlbuilder"
 	"github.com/jmoiron/sqlx"

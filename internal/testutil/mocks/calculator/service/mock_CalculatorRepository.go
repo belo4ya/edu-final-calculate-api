@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	models "edu-final-calculate-api/internal/calculator/repository/models"
+	models "github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
 
 	mock "github.com/stretchr/testify/mock"
 )

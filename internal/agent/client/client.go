@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"time"
 
-	"edu-final-calculate-api/internal/agent/config"
+	"github.com/belo4ya/edu-final-calculate-api/internal/agent/config"
 
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"

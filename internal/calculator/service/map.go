@@ -1,9 +1,9 @@
 package service
 
 import (
-	"edu-final-calculate-api/internal/calculator/repository/models"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/repository/models"
 
-	calculatorv1 "edu-final-calculate-api/pkg/calculator/v1"
+	calculatorv1 "github.com/belo4ya/edu-final-calculate-api/pkg/calculator/v1"
 
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"

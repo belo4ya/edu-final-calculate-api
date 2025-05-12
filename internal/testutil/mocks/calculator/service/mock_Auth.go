@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	auth "edu-final-calculate-api/internal/calculator/auth"
+	auth "github.com/belo4ya/edu-final-calculate-api/internal/calculator/auth"
 
 	mock "github.com/stretchr/testify/mock"
 )

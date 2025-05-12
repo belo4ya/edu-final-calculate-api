@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
-	"edu-final-calculate-api/api"
-	"edu-final-calculate-api/internal/calculator/config"
+	"github.com/belo4ya/edu-final-calculate-api/api"
+	"github.com/belo4ya/edu-final-calculate-api/internal/calculator/config"
 
 	"errors"
 	"fmt"
