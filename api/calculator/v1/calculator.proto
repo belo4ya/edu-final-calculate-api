@@ -11,9 +11,9 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "edu-final-calculate-api/pkg/calculator/v1;v1";
 
-// Handles calculation of arithmetic expressions.
+// Processes arithmetic expressions.
 service CalculatorService {
-  // Submits a new arithmetic expression for calculation.
+  // Submits an arithmetic expression for calculation.
   rpc Calculate(CalculateRequest) returns (CalculateResponse) {
     option (google.api.http) = {
       post: "/api/v1/calculate"
@@ -32,131 +32,131 @@ service CalculatorService {
     };
   }
 
-  // Returns all expressions.
+  // Lists all expressions.
   rpc ListExpressions(google.protobuf.Empty) returns (ListExpressionsResponse) {
     option (google.api.http) = {get: "/api/v1/expressions"};
   }
 
-  // Returns a specific expression by its identifier.
+  // Gets expression by identifier.
   rpc GetExpression(GetExpressionRequest) returns (GetExpressionResponse) {
     option (google.api.http) = {get: "/api/v1/expressions/{id}"};
   }
 
-  // Returns all tasks for a specific expression.
+  // Lists tasks for specified expression.
   rpc ListExpressionTasks(ListExpressionTasksRequest) returns (ListExpressionTasksResponse) {
     option (google.api.http) = {get: "/api/v1/expressions/{id}/tasks"};
   }
 }
 
-// Request for submitting a new expression.
+// Arithmetic expression submission.
 message CalculateRequest {
-  // Arithmetic expression to calculate.
+  // Expression to calculate.
   string expression = 1;
 }
 
-// Response after expression submission.
+// Data after expression submission.
 message CalculateResponse {
-  // Unique identifier of the submitted expression.
+  // Unique identifier.
   string id = 1;
 }
 
-// Represents the current state of an expression calculation.
+// Expression calculation states.
 enum ExpressionStatus {
   // Status not specified.
   EXPRESSION_STATUS_UNSPECIFIED = 0;
-  // Expression is waiting to be calculated.
+  // Waiting for calculation.
   EXPRESSION_STATUS_PENDING = 1;
-  // Expression is currently being calculated.
+  // Currently calculating.
   EXPRESSION_STATUS_IN_PROGRESS = 2;
-  // Expression calculation was successful.
+  // Calculation successful.
   EXPRESSION_STATUS_COMPLETED = 3;
-  // Expression calculation failed.
+  // Calculation failed.
   EXPRESSION_STATUS_FAILED = 4;
 }
 
-// Information about an arithmetic expression.
+// Arithmetic expression information.
 message Expression {
-  // Unique identifier of the expression.
+  // Unique identifier.
   string id = 1;
-  // Original arithmetic expression string.
+  // Original expression string.
   string expression = 2;
-  // Current calculation status.
+  // Calculation status.
   ExpressionStatus status = 3;
-  // Calculation result (if completed).
+  // Calculation result.
   double result = 4;
 }
 
-// Contains a list of all expressions.
+// List of expressions.
 message ListExpressionsResponse {
-  // List of expressions.
+  // Available expressions.
   repeated Expression expressions = 1;
 }
 
-// Request to fetch a specific expression.
+// Expression lookup information.
 message GetExpressionRequest {
-  // Identifier of the expression to retrieve.
+  // Expression identifier.
   string id = 1;
 }
 
-// Response containing a specific expression.
+// Single expression data.
 message GetExpressionResponse {
-  // The requested expression.
+  // Requested expression.
   Expression expression = 1;
 }
 
-// Represents the processing state of a calculation task.
+// Task processing states.
 enum TaskStatus {
   // Status not specified.
   TASK_STATUS_UNSPECIFIED = 0;
-  // Task is created.
+  // Task created.
   TASK_STATUS_CREATED = 1;
-  // Task is waiting to be processed.
+  // Waiting for processing.
   TASK_STATUS_PENDING = 2;
-  // Task is currently being processed.
+  // Currently processing.
   TASK_STATUS_IN_PROGRESS = 3;
-  // Task processing was successful.
+  // Processing successful.
   TASK_STATUS_COMPLETED = 4;
-  // Task processing failed.
+  // Processing failed.
   TASK_STATUS_FAILED = 5;
 }
 
-// Request to retrieve tasks for a specific expression.
+// Tasks lookup information.
 message ListExpressionTasksRequest {
-  // Identifier of the expression.
+  // Expression identifier.
   string id = 1;
 }
 
-// Contains a list of tasks for an expression.
+// Expression tasks collection.
 message ListExpressionTasksResponse {
-  // Detailed information about a calculation task.
+  // Calculation task details.
   message Task {
-    // Unique identifier of the task.
+    // Unique identifier.
     string id = 1;
-    // Identifier of the parent expression.
+    // Parent expression identifier.
     string expression_id = 2;
-    // Identifier of the first parent task.
+    // First parent task identifier.
     string parent_task_1_id = 3;
-    // Identifier of the second parent task.
+    // Second parent task identifier.
     string parent_task_2_id = 4;
     // First operand value.
     double arg_1 = 5;
     // Second operand value.
     double arg_2 = 6;
-    // Mathematical operation to perform.
+    // Mathematical operation.
     calculator.v1.TaskOperation operation = 7;
-    // Expected duration for task processing.
+    // Expected processing time.
     google.protobuf.Duration operation_time = 8;
-    // Current processing status.
+    // Processing status.
     TaskStatus status = 9;
     // Calculation result.
     double result = 10;
-    // Time when the task expires.
+    // Expiration time.
     google.protobuf.Timestamp expire_at = 11;
-    // Time when the task was created.
+    // Creation time.
     google.protobuf.Timestamp created_at = 12;
-    // Time when the task was last updated.
+    // Last update time.
     google.protobuf.Timestamp updated_at = 13;
   }
-  // List of tasks.
+  // Available tasks.
   repeated Task tasks = 1;
 }

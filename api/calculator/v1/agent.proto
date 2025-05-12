@@ -8,14 +8,14 @@ import "google/protobuf/empty.proto";
 
 option go_package = "edu-final-calculate-api/pkg/calculator/v1;v1";
 
-// Internal service for agent communication.
+// Manages communication between system and calculation agents.
 service AgentService {
-  // Get task for execution (for agents).
+  // Retrieves a task for execution.
   rpc GetTask(google.protobuf.Empty) returns (GetTaskResponse) {
     option (google.api.http) = {get: "/internal/task"};
   }
 
-  // Submit task processing result (from agents).
+  // Submits computation result for a task.
   rpc SubmitTaskResult(SubmitTaskResultRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/internal/task"
@@ -24,9 +24,9 @@ service AgentService {
   }
 }
 
-// Defines the mathematical operation to be performed on operands.
+// Available mathematical operations.
 enum TaskOperation {
-  // Operation not specified.
+  // Undefined operation.
   TASK_OPERATION_UNSPECIFIED = 0;
   // Addition operation (+).
   TASK_OPERATION_ADDITION = 1;
@@ -38,29 +38,29 @@ enum TaskOperation {
   TASK_OPERATION_DIVISION = 4;
 }
 
-// A single computational task to be processed by an agent.
+// Computational task for processing.
 message Task {
-  // Unique identifier of the task.
+  // Unique identifier.
   string id = 1;
-  // First operand value.
+  // First operand.
   double arg1 = 2;
-  // Second operand value.
+  // Second operand.
   double arg2 = 3;
-  // Mathematical operation to perform.
+  // Operation to perform.
   TaskOperation operation = 4;
-  // Expected duration for task processing.
+  // Expected processing duration.
   google.protobuf.Duration operation_time = 5;
 }
 
-// Contains a task assigned to an agent for processing.
+// Task data for agent.
 message GetTaskResponse {
-  // Task to be processed.
+  // Task to process.
   Task task = 1;
 }
 
-// Specifies the task result being submitted.
+// Computation result data.
 message SubmitTaskResultRequest {
-  // Identifier of the completed task.
+  // Task identifier.
   string id = 1;
   // Computation result.
   double result = 2;

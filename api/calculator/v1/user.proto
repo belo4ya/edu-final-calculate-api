@@ -7,7 +7,9 @@ import "google/protobuf/empty.proto";
 
 option go_package = "edu-final-calculate-api/pkg/calculator/v1;v1";
 
+// Manages user accounts.
 service UserService {
+  // Creates a new user account.
   rpc Register(RegisterRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/api/v1/register"
@@ -15,6 +17,7 @@ service UserService {
     };
   }
 
+  // Authenticates user and issues token.
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       post: "/api/v1/login"
@@ -23,16 +26,24 @@ service UserService {
   }
 }
 
+// User registration information.
 message RegisterRequest {
+  // User login.
   string login = 1;
+  // User password.
   string password = 2;
 }
 
+// Authentication information.
 message LoginRequest {
+  // User login.
   string login = 1;
+  // User password.
   string password = 2;
 }
 
+// Authentication result.
 message LoginResponse {
+  // JWT token for authorization.
   string access_token = 1;
 }
