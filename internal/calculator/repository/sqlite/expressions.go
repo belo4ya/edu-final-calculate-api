@@ -48,6 +48,69 @@ func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd mo
 		return "", fmt.Errorf("insert expression: %w", err)
 	}
 
+	// Insert tasks if provided
+	if len(cmd.Tasks) > 0 {
+		const insertTaskQuery = `
+            INSERT INTO tasks (
+                id, expression_id, parent_task_1_id, parent_task_2_id,
+                arg1, arg2, operation, operation_time, status, 
+                created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `
+
+		taskToChildTask := make(map[string]string)
+		for _, taskCmd := range cmd.Tasks {
+			// Track parent-child relationships
+			if taskCmd.ParentTask1ID != "" {
+				taskToChildTask[taskCmd.ParentTask1ID] = taskCmd.ID
+			}
+			if taskCmd.ParentTask2ID != "" {
+				taskToChildTask[taskCmd.ParentTask2ID] = taskCmd.ID
+			}
+
+			// Insert the task
+			_, err = tx.ExecContext(
+				ctx,
+				insertTaskQuery,
+				taskCmd.ID,
+				exprID,
+				taskCmd.ParentTask1ID,
+				taskCmd.ParentTask2ID,
+				taskCmd.Arg1,
+				taskCmd.Arg2,
+				taskCmd.Operation,
+				taskCmd.OperationTime.Milliseconds(), // Convert duration to milliseconds
+				models.TaskStatusPending,
+				timeNow,
+				timeNow,
+			)
+			if err != nil {
+				return "", fmt.Errorf("insert task: %w", err)
+			}
+		}
+
+		// Update tasks that are root tasks (no parents) to be in the pending queue
+		// by setting their status to "Pending"
+		for _, taskCmd := range cmd.Tasks {
+			if taskCmd.ParentTask1ID == "" && taskCmd.ParentTask2ID == "" {
+				const updateRootTaskQuery = `
+                    UPDATE tasks 
+                    SET status = ? 
+                    WHERE id = ?
+                `
+				_, err = tx.ExecContext(
+					ctx,
+					updateRootTaskQuery,
+					models.TaskStatusPending,
+					taskCmd.ID,
+				)
+				if err != nil {
+					return "", fmt.Errorf("update root task status: %w", err)
+				}
+			}
+		}
+	}
+
 	// Commit the transaction
 	if err = tx.Commit(); err != nil {
 		return "", fmt.Errorf("commit transaction: %w", err)
