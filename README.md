@@ -101,7 +101,7 @@ make lint test-cov
 доступного по адресу [http://localhost:8080/docs/](http://localhost:8080/docs/).
 
 <details>
-<summary>Картинка</summary>
+<summary>🏞️ Картинка</summary>
 <img src="docs/assets/swagger-ui.png" alt="" width="800">
 </details>
 
