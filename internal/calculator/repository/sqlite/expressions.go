@@ -221,7 +221,7 @@ func (r *Repository) GetPendingTask(ctx context.Context) (*models.Task, error) {
 func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("begin transaction: %w", err)
 	}
 	defer func() {
 		if err != nil {
@@ -229,81 +229,146 @@ func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) e
 		}
 	}()
 
-	now := time.Now()
+	// TODO:
+	// update task status, result, updated_at and RETURNING expression_id
+	// if task status == models.TaskStatusFailed - fail expression and all tasks with not finished status
+	// if isFinalTask(cmd.ID) - complete expression
+	// else - enqueue child tasks (change status from Created to Pending)
 
-	// Update the task with the result
-	result, err := tx.ExecContext(ctx, `
-		UPDATE tasks
-		SET status = ?, 
-		    result = ?, 
-		    updated_at = ?,
-		    expire_at = NULL
-		WHERE id = ?
-	`, cmd.Status, cmd.Result, now, cmd.TaskID)
+	const q = `
+        UPDATE tasks
+        SET status = :status,
+            result = :result,
+            updated_at = :updated_at
+        WHERE id = :id
+        RETURNING id, expression_id, parent_task_1_id, parent_task_2_id,
+			arg1, arg2, operation, operation_time, status, result,
+			expire_at, created_at, updated_at
+    `
 
+	row, err := sqlx.NamedQueryContext(ctx, tx, q, map[string]any{
+		"status":     cmd.Status,
+		"result":     sql.Null[float64]{V: cmd.Result, Valid: cmd.Status != models.TaskStatusFailed},
+		"updated_at": time.Now().UTC(),
+		"id":         cmd.ID,
+	})
 	if err != nil {
-		return fmt.Errorf("failed to update task: %w", err)
+		return fmt.Errorf("update task: %w", err)
+	}
+	defer func(row *sqlx.Rows) {
+		_ = row.Close()
+	}(row)
+
+	if !row.Next() {
+		return models.ErrTaskNotFound
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
+	var task models.Task
+	if err := row.StructScan(&task); err != nil {
+		return fmt.Errorf("scan task: %w", err)
 	}
 
-	if rowsAffected == 0 {
-		return fmt.Errorf("task not found: %s", cmd.TaskID)
-	}
-
-	// Check if we need to update the expression status
-	var expressionID string
-	err = tx.QueryRowContext(ctx, "SELECT expression_id FROM tasks WHERE id = ?", cmd.TaskID).Scan(&expressionID)
-	if err != nil {
-		return fmt.Errorf("failed to get expression ID: %w", err)
-	}
-
-	// Count pending/in-progress tasks for this expression
-	var unfinishedCount int
-	err = tx.QueryRowContext(ctx, `
-		SELECT COUNT(*) 
-		FROM tasks 
-		WHERE expression_id = ? AND status IN ('pending', 'in_progress')
-	`, expressionID).Scan(&unfinishedCount)
-
-	if err != nil {
-		return fmt.Errorf("failed to count unfinished tasks: %w", err)
-	}
-
-	// If no tasks are pending, the expression is completed
-	if unfinishedCount == 0 {
-		// Find the root task (which has no parents) to get the final result
-		var rootResult float64
-		err = tx.QueryRowContext(ctx, `
-			SELECT result 
-			FROM tasks 
-			WHERE expression_id = ? AND parent_task_1_id IS NULL AND parent_task_2_id IS NULL
-		`, expressionID).Scan(&rootResult)
-
-		if err != nil {
-			return fmt.Errorf("failed to get root task result: %w", err)
+	// Handle task failure - propagate failure to entire expression
+	if cmd.Status == models.TaskStatusFailed {
+		if err := r.failExpression(ctx, tx, &task); err != nil {
+			return fmt.Errorf("fail expr: %w", err)
 		}
+		if err = tx.Commit(); err != nil {
+			return fmt.Errorf("commit transaction: %w", err)
+		}
+		return nil
+	}
 
-		// Update the expression with the final result
-		_, err = tx.ExecContext(ctx, `
-			UPDATE expressions
-			SET status = 'completed', 
-			    result = ?,
-			    updated_at = ?
-			WHERE id = ?
-		`, rootResult, now, expressionID)
+	// Process successfully completed task - either enqueue child or complete expression
+	isFinal, err := r.isFinalTask(ctx, tx, task.ID)
+	if err != nil {
+		return fmt.Errorf("is final task: %w", err)
+	}
 
-		if err != nil {
-			return fmt.Errorf("failed to update expression: %w", err)
+	if !isFinal {
+		if err := r.enqueueChildTask(ctx, tx, &task); err != nil {
+			return fmt.Errorf("enqueue child task: %w", err)
+		}
+	} else {
+		if err := r.completeExpression(ctx, tx, task.ExpressionID, &task); err != nil {
+			return fmt.Errorf("complete expr: %w", err)
 		}
 	}
 
 	if err = tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+	return nil
+}
+
+func (r *Repository) failExpression(ctx context.Context, tx *sqlx.Tx, task *models.Task) error {
+	q := `UPDATE expressions SET status = ?, updated_at = ? WHERE id = ?`
+	if _, err := tx.ExecContext(
+		ctx, q,
+		models.ExpressionStatusFailed, task.UpdatedAt, task.ExpressionID,
+	); err != nil {
+		return fmt.Errorf("fail expression: %w", err)
 	}
 
+	q = `UPDATE tasks SET status = ?, updated_at = ? WHERE expression_id = ? AND status NOT IN (?, ?)`
+	if _, err := tx.ExecContext(
+		ctx, q,
+		models.TaskStatusFailed,
+		task.UpdatedAt,
+		task.ExpressionID,
+		models.TaskStatusCompleted,
+		models.TaskStatusFailed,
+	); err != nil {
+		return fmt.Errorf("tx exec: %w", err)
+	}
+	return nil
+}
+
+func (r *Repository) isFinalTask(ctx context.Context, tx *sqlx.Tx, taskID string) (bool, error) {
+	const q = `SELECT COUNT(*) FROM tasks WHERE parent_task_1_id = ? OR parent_task_2_id = ?`
+
+	var child int
+	if err := tx.GetContext(ctx, &child, q, taskID, taskID); err != nil {
+		return false, fmt.Errorf("check child tasks: %w", err)
+	}
+	return child == 0, nil
+}
+
+func (r *Repository) enqueueChildTask(ctx context.Context, tx *sqlx.Tx, completedTask *models.Task) error {
+	const q = `
+            UPDATE tasks 
+            SET status = :status_pending, updated_at = :updated_at
+            WHERE 
+                (
+                    (parent_task_1_id = :task_id AND (parent_task_2_id IS NULL OR 
+                        parent_task_2_id IN (SELECT id FROM tasks WHERE status = :status_completed)))
+                    OR
+                    (parent_task_2_id = :task_id AND (parent_task_1_id IS NULL OR 
+                        parent_task_1_id IN (SELECT id FROM tasks WHERE status = :status_completed)))
+                )
+                AND status = :status_created
+        `
+
+	if _, err := tx.NamedExecContext(ctx, q, map[string]any{
+		"status_pending":   models.TaskStatusPending,
+		"updated_at":       completedTask.UpdatedAt,
+		"task_id":          completedTask.ID,
+		"status_completed": models.TaskStatusCompleted,
+		"status_created":   models.TaskStatusCreated,
+	}); err != nil {
+		return fmt.Errorf("update task: %w", err)
+	}
+	return nil
+}
+
+func (r *Repository) completeExpression(ctx context.Context, tx *sqlx.Tx, exprID string, finalTask *models.Task) error {
+	const q = `UPDATE expressions SET status = ?, result = ?, updated_at = ? WHERE id = ?`
+
+	if _, err := tx.ExecContext(
+		ctx, q,
+		models.ExpressionStatusCompleted, finalTask.Result, finalTask.UpdatedAt, exprID,
+	); err != nil {
+		return fmt.Errorf("update expr: %w", err)
+	}
 	return nil
 }
