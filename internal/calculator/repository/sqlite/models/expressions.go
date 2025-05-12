@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"time"
 )
@@ -12,15 +13,15 @@ var (
 )
 
 type Expression struct {
-	ID         string           `json:"id"`
-	UserID     string           `json:"user_id"`
-	Expression string           `json:"expression"`
-	Status     ExpressionStatus `json:"status"`
-	Result     float64          `json:"result"`
-	Error      string           `json:"error"`
+	ID         string            `db:"id"`
+	UserID     string            `db:"user_id"`
+	Expression string            `db:"expression"`
+	Status     ExpressionStatus  `db:"status"`
+	Result     sql.Null[float64] `db:"result"`
+	Error      sql.Null[string]  `db:"error"`
 
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type ExpressionStatus string
@@ -33,21 +34,21 @@ const (
 )
 
 type Task struct {
-	ID            string `json:"id"`
-	ExpressionID  string `json:"expression_id"`
-	ParentTask1ID string `json:"parent_task_1_id"`
-	ParentTask2ID string `json:"parent_task_2_id"`
+	ID            string           `db:"id"`
+	ExpressionID  string           `db:"expression_id"`
+	ParentTask1ID sql.Null[string] `db:"parent_task_1_id"`
+	ParentTask2ID sql.Null[string] `db:"parent_task_2_id"`
 
-	Arg1          float64       `json:"arg_1"`
-	Arg2          float64       `json:"arg_2"`
-	Operation     TaskOperation `json:"operation"`
-	OperationTime time.Duration `json:"operation_time"`
-	Status        TaskStatus    `json:"status"`
-	Result        float64       `json:"result"`
-	ExpireAt      time.Time     `json:"expire_at"` // TODO: to think
+	Arg1          float64             `db:"arg_1"`
+	Arg2          float64             `db:"arg_2"`
+	Operation     TaskOperation       `db:"operation"`
+	OperationTime time.Duration       `db:"operation_time"`
+	Status        TaskStatus          `db:"status"`
+	Result        sql.Null[float64]   `db:"result"`
+	ExpireAt      sql.Null[time.Time] `db:"expire_at"` // TODO: to think
 
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type TaskOperation string

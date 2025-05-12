@@ -7,12 +7,12 @@ require (
 	github.com/belo4ya/runy v0.1.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/dgraph-io/badger/v4 v4.7.0
-	github.com/ggwhite/go-masker/v2 v2.1.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
+	github.com/huandu/go-sqlbuilder v1.35.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.28
@@ -40,6 +40,7 @@ require (
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/google/flatbuffers v25.2.10+incompatible // indirect
+	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect

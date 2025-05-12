@@ -8,15 +8,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/huandu/go-sqlbuilder"
 	"github.com/rs/xid"
 )
 
 // CreateExpression stores a new expression with its associated tasks
 // and returns the ID of the created expression.
 func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd models.CreateExpressionCmd) (string, error) {
-	exprID := xid.New().String()
-	timeNow := time.Now().UTC()
-
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return "", fmt.Errorf("begin transaction: %w", err)
@@ -27,96 +25,89 @@ func (r *Repository) CreateExpression(ctx context.Context, userID string, cmd mo
 		}
 	}()
 
-	// Insert the new expression
-	const insertExpressionQuery = `
-        INSERT INTO expressions (
-            id, user_id, expression, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?)
+	const q = `
+        INSERT INTO expressions (id, user_id, expression, status, created_at, updated_at)
+		VALUES (:id, :user_id, :expression, :status, :created_at, :updated_at)
     `
 
-	_, err = tx.ExecContext(
-		ctx,
-		insertExpressionQuery,
-		exprID,
-		userID,
-		cmd.Expression,
-		models.ExpressionStatusPending,
-		timeNow,
-		timeNow,
+	now := time.Now().UTC()
+	expr := models.Expression{
+		ID:         xid.New().String(),
+		UserID:     userID,
+		Expression: cmd.Expression,
+		Status:     models.ExpressionStatusPending,
+		Result:     sql.Null[float64]{},
+		Error:      sql.Null[string]{},
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	}
+
+	if _, err = tx.NamedExecContext(ctx, q, expr); err != nil {
+		return "", fmt.Errorf("db exec: %w", err)
+	}
+
+	tasks := make([]models.Task, 0, len(cmd.Tasks))
+	for _, t := range cmd.Tasks {
+		status := models.TaskStatusCreated
+		if t.ParentTask1ID == "" && t.ParentTask2ID == "" {
+			status = models.TaskStatusPending
+		}
+		tasks = append(tasks, models.Task{
+			ID:            t.ID,
+			ExpressionID:  expr.ID,
+			ParentTask1ID: sql.Null[string]{V: t.ParentTask1ID, Valid: t.ParentTask1ID != ""},
+			ParentTask2ID: sql.Null[string]{V: t.ParentTask2ID, Valid: t.ParentTask2ID != ""},
+			Arg1:          t.Arg1,
+			Arg2:          t.Arg2,
+			Operation:     t.Operation,
+			OperationTime: t.OperationTime,
+			Status:        status,
+			Result:        sql.Null[float64]{},
+			ExpireAt:      sql.Null[time.Time]{},
+			CreatedAt:     expr.CreatedAt,
+			UpdatedAt:     expr.UpdatedAt,
+		})
+	}
+
+	sb := sqlbuilder.NewInsertBuilder().InsertInto("tasks").Cols(
+		"id",
+		"expression_id",
+		"parent_task_1_id",
+		"parent_task_2_id",
+		"arg1",
+		"arg2",
+		"operation",
+		"operation_time",
+		"status",
+		"created_at",
+		"updated_at",
 	)
-	if err != nil {
-		return "", fmt.Errorf("insert expression: %w", err)
+	for _, t := range tasks {
+		sb.Values(
+			t.ID,
+			t.ExpressionID,
+			t.ParentTask1ID,
+			t.ParentTask2ID,
+			t.Arg1,
+			t.Arg2,
+			t.Operation,
+			t.OperationTime,
+			t.Status,
+			t.CreatedAt,
+			t.UpdatedAt,
+		)
 	}
 
-	// Insert tasks if provided
-	if len(cmd.Tasks) > 0 {
-		const insertTaskQuery = `
-            INSERT INTO tasks (
-                id, expression_id, parent_task_1_id, parent_task_2_id,
-                arg1, arg2, operation, operation_time, status, 
-                created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `
-
-		taskToChildTask := make(map[string]string)
-		for _, taskCmd := range cmd.Tasks {
-			// Track parent-child relationships
-			if taskCmd.ParentTask1ID != "" {
-				taskToChildTask[taskCmd.ParentTask1ID] = taskCmd.ID
-			}
-			if taskCmd.ParentTask2ID != "" {
-				taskToChildTask[taskCmd.ParentTask2ID] = taskCmd.ID
-			}
-
-			// Insert the task
-			_, err = tx.ExecContext(
-				ctx,
-				insertTaskQuery,
-				taskCmd.ID,
-				exprID,
-				taskCmd.ParentTask1ID,
-				taskCmd.ParentTask2ID,
-				taskCmd.Arg1,
-				taskCmd.Arg2,
-				taskCmd.Operation,
-				taskCmd.OperationTime.Milliseconds(), // Convert duration to milliseconds
-				models.TaskStatusPending,
-				timeNow,
-				timeNow,
-			)
-			if err != nil {
-				return "", fmt.Errorf("insert task: %w", err)
-			}
-		}
-
-		// Update tasks that are root tasks (no parents) to be in the pending queue
-		// by setting their status to "Pending"
-		for _, taskCmd := range cmd.Tasks {
-			if taskCmd.ParentTask1ID == "" && taskCmd.ParentTask2ID == "" {
-				const updateRootTaskQuery = `
-                    UPDATE tasks 
-                    SET status = ? 
-                    WHERE id = ?
-                `
-				_, err = tx.ExecContext(
-					ctx,
-					updateRootTaskQuery,
-					models.TaskStatusPending,
-					taskCmd.ID,
-				)
-				if err != nil {
-					return "", fmt.Errorf("update root task status: %w", err)
-				}
-			}
-		}
+	query, args := sb.Build()
+	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+		return "", fmt.Errorf("db query: %w", err)
 	}
 
-	// Commit the transaction
 	if err = tx.Commit(); err != nil {
 		return "", fmt.Errorf("commit transaction: %w", err)
 	}
 
-	return exprID, nil
+	return expr.ID, nil
 }
 
 // ListExpressions retrieves all stored expressions for a specific user.
@@ -137,7 +128,7 @@ func (r *Repository) ListExpressions(ctx context.Context, userID string) ([]mode
 }
 
 // GetExpression retrieves a specific expression by its ID for a specific user.
-// Returns models.ErrExpressionNotFound if the expression doesn't exist.
+// Returns [models.ErrExpressionNotFound] if the expression doesn't exist.
 func (r *Repository) GetExpression(ctx context.Context, userID string, exprID string) (*models.Expression, error) {
 	const q = `
         SELECT id, user_id, expression, status, result, error, created_at, updated_at 
@@ -157,7 +148,7 @@ func (r *Repository) GetExpression(ctx context.Context, userID string, exprID st
 }
 
 // ListExpressionTasks retrieves all tasks associated with a specific expression for a specific user.
-// Returns models.ErrExpressionNotFound if the expression doesn't exist.
+// Returns [models.ErrExpressionNotFound] if the expression doesn't exist.
 func (r *Repository) ListExpressionTasks(ctx context.Context, userID string, exprID string) ([]models.Task, error) {
 	q := `SELECT COUNT(*) FROM expressions WHERE id = ? AND user_id = ?`
 
@@ -187,7 +178,7 @@ func (r *Repository) ListExpressionTasks(ctx context.Context, userID string, exp
 }
 
 // GetPendingTask retrieves and claims the first available pending task.
-// Returns models.ErrNoPendingTasks if there are no pending tasks available.
+// Returns [models.ErrNoPendingTasks] if there are no pending tasks available.
 func (r *Repository) GetPendingTask(ctx context.Context) (models.Task, error) {
 	//TODO implement me
 	panic("implement me")
@@ -195,7 +186,7 @@ func (r *Repository) GetPendingTask(ctx context.Context) (models.Task, error) {
 
 // FinishTask updates a task's status and result, and handles subsequent operations
 // like updating related tasks, enqueueing child tasks, or completing expressions.
-// Returns models.ErrTaskNotFound if the task doesn't exist.
+// Returns [models.ErrTaskNotFound] if the task doesn't exist.
 func (r *Repository) FinishTask(ctx context.Context, cmd models.FinishTaskCmd) error {
 	//TODO implement me
 	panic("implement me")
